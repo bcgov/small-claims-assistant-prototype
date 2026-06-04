@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
+        "agent-agentic-os",
+        "agent-loops",
+        "agent-scaffolders",
+        "cli-agents",
+        "dependency-management",
+        "dev-utils",
+        "exploration-cycle-plugin",
+        "spec-kitty"
+      ]
+    }
+  ]
+}
