@@ -12,5 +12,12 @@
     "files": [
       "plugins/small-claims-assistant/scripts/render_notice_of_claim_pdf.py"
     ]
+  },
+  {
+    "title": "Submit Notice Of Claim Mock API",
+    "description": "Transform canonical JSON into a deterministic mock filing payload and response artifact pair.",
+    "files": [
+      "plugins/small-claims-assistant/scripts/submit_notice_of_claim_mock_api.py"
+    ]
   }
 ]

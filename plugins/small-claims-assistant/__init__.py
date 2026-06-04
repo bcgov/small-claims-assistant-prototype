@@ -15,3 +15,7 @@ def register(ctx) -> None:
         name="notice-of-claim-pdf-generation",
         path=HERE / "skills" / "notice-of-claim-pdf-generation",
     )
+    ctx.register_skill(
+        name="notice-of-claim-filing-adapter",
+        path=HERE / "skills" / "notice-of-claim-filing-adapter",
+    )

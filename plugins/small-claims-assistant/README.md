@@ -15,10 +15,12 @@ The active architecture keeps intake-to-JSON separate from JSON-to-PDF generatio
 ### Skills
 - `skills/notice-of-claim-intake/` — interactive intake skill scaffold for the Notice of Claim interview flow
 - `skills/notice-of-claim-pdf-generation/` — deterministic generation skill scaffold for readiness checks and renderer handoff
+- `skills/notice-of-claim-filing-adapter/` — deterministic mock filing-adapter scaffold for downstream payload transformation
 
 ### Scripts
 - `scripts/write_notice_of_claim_json.py` — deterministic writer that merges partial intake data onto the canonical Notice of Claim draft template
 - `scripts/render_notice_of_claim_pdf.py` — deterministic renderer entrypoint that validates canonical JSON readiness and emits a PDF artifact manifest
+- `scripts/submit_notice_of_claim_mock_api.py` — deterministic filing-adapter entrypoint that emits mock request and response artifacts from canonical JSON
 
 ### Data Assets
 - `assets/case-models/notice-of-claim/notice-of-claim-intake-definition.json` — observed Filing Assistant question order plus canonical JSON draft template
@@ -35,6 +37,7 @@ The active architecture keeps intake-to-JSON separate from JSON-to-PDF generatio
 - `plugin.yaml` carries the explicit skill inventory for Hermes-style compatibility.
 - The intake skill remains limited to guided intake and canonical JSON updates.
 - The PDF-generation slice is intentionally separate so deterministic rendering can evolve without collapsing back into the intake skill.
+- The filing-adapter slice is intentionally separate so downstream API payload logic can evolve without collapsing into intake or rendering.
 
 ## Backlog Visibility
 
@@ -69,8 +72,10 @@ small-claims-assistant/
 ├── references/
 ├── tests/
 │   └── test_render_notice_of_claim_pdf.py
+│   └── test_submit_notice_of_claim_mock_api.py
 ├── scripts/
 │   ├── render_notice_of_claim_pdf.py
+│   ├── submit_notice_of_claim_mock_api.py
 │   └── write_notice_of_claim_json.py
 └── skills/
     └── notice-of-claim-intake/
@@ -82,6 +87,9 @@ small-claims-assistant/
         └── references/
             └── acceptance-criteria.md
     └── notice-of-claim-pdf-generation/
+        ├── SKILL.md
+        └── scripts/
+    └── notice-of-claim-filing-adapter/
         ├── SKILL.md
         └── scripts/
 ```
