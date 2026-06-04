@@ -26,6 +26,10 @@ The tested path for Notice of Claim required these inputs or decisions:
 
 The generated output is a package, not a single simple filled page.
 
+Authoritative form source now identified for the main Notice of Claim template:
+
+- Official Form 1 PDF: `https://www2.gov.bc.ca/assets/gov/law-crime-and-justice/courthouse-services/court-files-records/court-forms/small-claims/scl001.pdf`
+
 Observed page types from screenshots:
 
 - Cover page: `NOTICE OF CLAIM`
@@ -37,6 +41,7 @@ Observed page types from screenshots:
 ## Layout Implications
 
 - The output must preserve exact form structure rather than produce a custom redesign.
+- The official Form 1 PDF should be treated as the source template for the main Notice of Claim form rather than relying only on screenshots from the Filing Assistant package.
 - Narrative overflow is handled using a separate attachment-page format.
 - Monetary claims are itemized by line, with totals presented in fixed locations.
 - Related forms in the same package use their own fixed court layouts.

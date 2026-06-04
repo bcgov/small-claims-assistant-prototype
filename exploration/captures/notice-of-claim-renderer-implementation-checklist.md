@@ -12,6 +12,7 @@ It is intended to guide the first plugin-first build without collapsing the cano
 - `exploration/captures/notice-of-claim-pdf-field-mapping.md`
 - `exploration/captures/plugin-subagent-boundaries.md`
 - `exploration/captures/reference-system-findings.md`
+- Official main form template source: `https://www2.gov.bc.ca/assets/gov/law-crime-and-justice/courthouse-services/court-files-records/court-forms/small-claims/scl001.pdf`
 
 ## First-Slice Build Target
 
@@ -52,6 +53,7 @@ This means the first implementation should be designed as a shared plugin-level 
   - main Notice of Claim form page
   - attachment overflow page
   - Certificate of Service page, if included in first-slice package generation
+- [ ] Download and archive the official Form 1 PDF as the authoritative source for the main Notice of Claim page template.
 - [ ] Identify which pages are static-template pages versus data-bound pages.
 - [ ] Identify where the official form files or reconstruction assets will live in the plugin structure.
 - [ ] Record template versioning strategy under `generation.pdf.templateVersion`.
@@ -133,6 +135,7 @@ This means the first implementation should be designed as a shared plugin-level 
 - [ ] Confirm attachment-page header requirements.
 - [ ] Confirm how much of the Certificate of Service page should be modeled now.
 - [ ] Confirm any hidden or implied package metadata required by the official form set.
+- [ ] Confirm whether companion pages in the Filing Assistant package are sourced from separate official PDFs or assembled as application-owned package inserts around Form 1.
 
 ## 10. Suggested Build Order
 

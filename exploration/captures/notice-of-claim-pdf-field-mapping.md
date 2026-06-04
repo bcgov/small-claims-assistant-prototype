@@ -18,6 +18,7 @@ The main goal is to prevent the implementation from drifting into page-shaped bu
 - Based on the observed package pages from the BC Filing Assistant walkthrough
 - Uses the canonical JSON defined in `exploration/captures/notice-of-claim-canonical-case-json.md`
 - Includes both direct field mappings and renderer-derived behaviors
+- The authoritative source template for the main Notice of Claim form is the official BC Form 1 PDF: `https://www2.gov.bc.ca/assets/gov/law-crime-and-justice/courthouse-services/court-files-records/court-forms/small-claims/scl001.pdf`
 
 ## Mapping Principles
 
@@ -26,6 +27,7 @@ The main goal is to prevent the implementation from drifting into page-shaped bu
 - Some pages in the package are mostly static template output and do not require user-authored JSON fields.
 - Overflow handling is a renderer responsibility driven by canonical data length, not a separate user workflow unless the product later chooses to expose it explicitly.
 - Fields marked as inferred still need confirmation against the official form package or a more detailed PDF inspection pass.
+- Where screenshots and the official Form 1 PDF diverge in clarity, the official Form 1 PDF should win for the main form-page layout.
 
 ## Package-Level Mapping
 
@@ -203,6 +205,7 @@ These behaviors are required even though they do not map one-to-one to a single 
 4. What exact headers or carry-forward fields appear on the attachment page?
 5. Which fields on the Certificate of Service page should be modeled now versus deferred?
 6. Does the package require any hidden identifiers, filing codes, or registry metadata beyond the currently proposed `jurisdiction.registryLocation`?
+7. Which package pages come directly from the official Form 1 template versus being assembled as companion pages by the Filing Assistant package flow?
 
 ## Recommended Immediate Follow-On
 
