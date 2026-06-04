@@ -1,21 +1,32 @@
 import { useEffect, useRef } from 'react'
+import { INTAKE_STEPS } from '../data/intakeFlow'
 import { useIntakeChat } from '../hooks/useIntakeChat'
 import { StepSidebar } from './StepSidebar'
 import { TypingIndicator } from './TypingIndicator'
 
 function formatContent(text: string) {
-  // Render **bold** markers
-  const parts = text.split(/(\*\*[^*]+\*\*)/g)
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
-    }
-    return part
+  // Render **bold** and newlines
+  return text.split('\n').map((line, lineIdx) => {
+    if (line === '') return <span key={lineIdx} className="bubble-break" />
+    const parts = line.split(/(\*\*[^*]+\*\*)/g)
+    return (
+      <p key={lineIdx}>
+        {parts.map((part, i) =>
+          part.startsWith('**') && part.endsWith('**')
+            ? <strong key={i}>{part.slice(2, -2)}</strong>
+            : part,
+        )}
+      </p>
+    )
   })
 }
 
 export function IntakeChat() {
-  const { messages, stepIndex, phase, isTyping, input, setInput, send, steps } = useIntakeChat()
+  const {
+    messages, stepIndex, currentSectionIndex, phase,
+    isTyping, input, setInput, send, sections,
+  } = useIntakeChat()
+
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -24,9 +35,7 @@ export function IntakeChat() {
   }, [messages, isTyping])
 
   useEffect(() => {
-    if (!isTyping) {
-      inputRef.current?.focus()
-    }
+    if (!isTyping) inputRef.current?.focus()
   }, [isTyping, messages])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,33 +50,43 @@ export function IntakeChat() {
     }
   }
 
-  const currentStep = steps[stepIndex]
   const isComplete = phase === 'complete'
+  const isConfirming = phase === 'confirming'
+  const currentStep = INTAKE_STEPS[stepIndex]
+  const currentSection = sections[currentSectionIndex]
+
+  // Progress: count unique sections visited
+  const progressPct = isComplete ? 100
+    : isConfirming ? 95
+    : Math.round((currentSectionIndex / sections.length) * 100)
 
   return (
     <div className="chat-layout">
-      <StepSidebar steps={steps} currentIndex={stepIndex} phase={phase} />
+      <StepSidebar
+        sections={sections}
+        currentSectionIndex={currentSectionIndex}
+        phase={phase}
+      />
 
       <div className="chat-main">
-        {/* Step label bar */}
+        {/* Step bar */}
         <div className="chat-step-bar">
           <span className="chat-step-bar-text">
-            {phase === 'confirming'
+            {isComplete
+              ? 'Intake complete — ready to generate PDF'
+              : isConfirming
               ? 'Review your answers'
-              : phase === 'complete'
-              ? 'Intake complete'
-              : `Step ${stepIndex + 1} of ${steps.length} — ${currentStep?.label}`}
+              : `${currentSection?.label ?? ''}`}
           </span>
-          {phase !== 'complete' && (
-            <div className="chat-progress-track" role="progressbar" aria-valuenow={stepIndex} aria-valuemax={steps.length}>
-              <div
-                className="chat-progress-fill"
-                style={{
-                  width: `${phase === 'confirming' ? 100 : (stepIndex / steps.length) * 100}%`,
-                }}
-              />
-            </div>
-          )}
+          <div
+            className="chat-progress-track"
+            role="progressbar"
+            aria-valuenow={progressPct}
+            aria-valuemax={100}
+            aria-label="Intake progress"
+          >
+            <div className="chat-progress-fill" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
 
         {/* Messages */}
@@ -82,12 +101,10 @@ export function IntakeChat() {
                 </div>
               )}
 
-              <div className={`bubble bubble-${msg.role} ${msg.type === 'summary' ? 'bubble-summary' : ''}`}>
-                {msg.content.split('\n').map((line, i) => (
-                  <p key={i} className={line === '' ? 'bubble-spacer' : undefined}>
-                    {line === '' ? null : formatContent(line)}
-                  </p>
-                ))}
+              <div className={`bubble bubble-${msg.role}${msg.type === 'summary' ? ' bubble-summary' : ''}`}>
+                <div className="bubble-content">
+                  {formatContent(msg.content)}
+                </div>
 
                 {msg.hint && (
                   <div className="bubble-hint">
@@ -146,7 +163,7 @@ export function IntakeChat() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Intake complete — you can now proceed to generate your Notice of Claim PDF.
+              Intake complete — proceed to generate your Notice of Claim PDF.
             </div>
           ) : (
             <>
@@ -157,11 +174,13 @@ export function IntakeChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  phase === 'confirming'
+                  isConfirming
                     ? 'Type "confirm" to proceed, or describe what to change…'
-                    : (steps[stepIndex]?.placeholder ?? 'Type your reply…')
+                    : currentStep?.isInfo
+                    ? 'Press Enter to continue…'
+                    : (currentStep?.placeholder ?? 'Type your reply…')
                 }
-                rows={2}
+                rows={currentStep?.id === 'narrative' || currentStep?.id === 'remedy_items' ? 3 : 2}
                 disabled={isTyping}
                 aria-label="Your message"
               />
@@ -169,9 +188,9 @@ export function IntakeChat() {
                 type="submit"
                 className="send-button"
                 disabled={!input.trim() || isTyping}
-                aria-label="Send message"
+                aria-label="Send"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span>Send</span>
