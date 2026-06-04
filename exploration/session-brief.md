@@ -36,13 +36,16 @@ User trigger, preserved verbatim:
 - The system may need to support more than one output mode:
   - exact Notice of Claim PDF package
   - optional mock or future e-filing API payload/endpoint path
-  - [INTAKE DRAFT - confirm] a third structured machine-readable output such as canonical case JSON or filing package data
+  - canonical case JSON as the machine-readable source-of-truth output
 - A future CEIS integration is desirable but should be treated as optional and decoupled from the core intake and PDF-generation path.
 - The product is now intended to live in this standalone repository, not in `agent-plugins-skills`.
 - The product should support two delivery paths to the same legal output core:
-  - a standalone web app
-  - an interactive agent skill/plugin hosted in this repo
+  - an interactive agent skill/plugin hosted in this repo as the preferred initial path
+  - a standalone web app as a secondary path with higher hosting and model-cost implications
 - Discovery work in this repo should continue to follow the exploration-cycle process and local `.agent/rules` files.
+- The plugin/sub-agent route is economically attractive because the AI assistance can use the user's own AI environment and token budget rather than requiring province-hosted model usage.
+- A web app with AI clarification support would require hosted API access, infrastructure, and an operating budget for model calls.
+- The plugin-first skills and sub-agents should also be treated as a prototype and reuse candidate for any later API-backed AI support in the web app.
 
 ## Current Reference System Behavior
 
@@ -73,14 +76,20 @@ User trigger, preserved verbatim:
 
 ## Early Direction
 
-[CONFIRMED] The product should support two access paths in parallel: a standalone web app and an interactive plugin/agent skill, both reaching the same legal output core.
+[CONFIRMED] The product should support two access paths to the same legal output core, with the interactive plugin/agent skill as the preferred initial path and the web app as a secondary path.
 
-[INTAKE DRAFT - confirm] The product should improve the legacy intake experience with guided assistance and stronger validation, while preserving compatibility with the official Notice of Claim output package and leaving room for a future court-filing adapter.
+[CONFIRMED] The product should improve the legacy intake experience with guided assistance and stronger validation, while preserving compatibility with the official Notice of Claim output package and leaving room for a future court-filing adapter.
+
+[CONFIRMED] The plugin/sub-agent should be able to explain unclear questions, elaborate on legal or procedural wording, ask follow-up questions, and help users formulate answers before deterministic PDF generation runs.
+
+[INTAKE DRAFT - confirm] A skill-owned scripts folder, likely using Python, is a strong candidate for deterministic PDF generation from canonical case data.
+
+[CONFIRMED] If the web app later adds hosted AI support, it should preferentially reuse the same skills and sub-agents developed for the plugin-first path.
 
 ## Open Questions
 
 - [INTAKE DRAFT - confirm] Is the desired first milestone a discovery/handoff package, a prototype, or both?
 - [CONFIRMED] The first implementation scope should focus on Notice of Claim only.
 - [INTAKE DRAFT - confirm] Should CEIS research happen during discovery, or after the PDF-generation baseline is defined?
-- [CONFIRMED] The preferred delivery model includes both a standalone web app and an interactive plugin/agent skill path.
-- [INTAKE DRAFT - confirm] What is the intended third output mode in addition to PDF and optional e-filing/API output?
+- [CONFIRMED] The preferred delivery model is plugin-first, with the standalone web app treated as a secondary path.
+- [CONFIRMED] The third output mode is canonical case JSON.

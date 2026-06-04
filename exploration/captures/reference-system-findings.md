@@ -49,15 +49,18 @@ Observed page types from screenshots:
   - canonical legal data model
   - deterministic court-form PDF renderer
   - optional validation and filing adapters
-- The target product now has two intended delivery paths in a standalone repo:
-  - a standalone web app
-  - an interactive AI-native plugin/skill path
-- The plugin/skill path should behave like an interactive filing assistant agent: gather the inputs, validate them, and emit one or more outputs.
+- The target product now has two intended delivery paths in a standalone repo, but they should not be treated as equal first-slice investments:
+  - an interactive AI-native plugin/skill path as the primary initial experience
+  - a standalone web app as a secondary path with higher operating complexity
+- The plugin/skill path should behave like an interactive filing assistant agent: gather the inputs, validate them, explain unclear prompts, ask follow-up questions, and emit one or more outputs.
 - This new filing assistant plugin should be treated as its own standalone product, not as part of `agent-plugins-skills`, even though that ecosystem provides useful reference patterns.
+- The plugin-first approach is operationally attractive because clarification help can run inside the user's own AI environment instead of requiring province-hosted model calls.
+- A skill can pair AI-guided intake with deterministic local scripts, likely Python-based, to generate the final PDF package after answers are collected and validated.
+- Those plugin skills and sub-agents should also be viewed as the prototype for any later hosted AI support in a web app, so the conversational guidance layer can be reused instead of reimplemented.
 - Current candidate outputs are:
   - exact Notice of Claim PDF package
   - optional mock or future direct e-filing API output
-  - [UNCONFIRMED] a third structured output such as canonical case JSON or filing payload package
+  - canonical case JSON as the normalized structured output shared across rendering and future integrations
 - CEIS integration should remain a separate downstream concern until a supported interface is confirmed.
 
 ## Current Scope Decision
