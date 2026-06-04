@@ -123,7 +123,14 @@ export function useIntakeChat() {
       return
     }
 
-    // User is asking a question
+    // User is asking a question — static keyword lookup handles common terms at zero AI cost.
+    // TODO: replace findClarification() with an Azure Copilot API call for production.
+    //   Pass { userMessage: trimmed, currentStep: step.id, currentSection: step.sectionId,
+    //          capturedSoFar: caseData } so the model can give a context-aware answer
+    //   (e.g. it knows the user is on "defendant address" and has already captured their name).
+    //   See PlumbingPoC packages/frontend/src/features/requests/components/QuoteAgentModal.tsx
+    //   for the reference pattern: POST /agents/quote/run with messages + context payload,
+    //   handle streaming or single-shot response, then re-ask the current step.
     if (isQuestion(trimmed)) {
       const clarification = findClarification(trimmed) ?? FALLBACK_CLARIFICATION
       setIsTyping(true)
