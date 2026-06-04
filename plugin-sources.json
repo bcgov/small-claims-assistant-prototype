@@ -18,6 +18,12 @@
       "plugins": [
         "superpowers"
       ]
+    },
+    {
+      "source": "C:\\Users\\RICHFREM\\source\\repos\\small-claims-assistant\\plugins",
+      "plugins": [
+        "small-claims-assistant"
+      ]
     }
   ]
 }

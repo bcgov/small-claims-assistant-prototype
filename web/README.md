@@ -1,50 +1,38 @@
-# React + TypeScript + Vite
+# BC Small Claims Web Host
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the first web-host shell for the BC Small Claims assistant.
 
-Currently, two official plugins are available:
+Its current job is narrow on purpose: present a BC Gov-oriented React host over the same
+canonical Notice of Claim JSON contract already used by the plugin path. It is not a second
+renderer, not a second intake architecture, and not yet a live filing client.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Current Scope
 
-## Expanding the ESLint configuration
+- show the shared canonical case JSON core
+- keep the downstream branches visible: guided intake, deterministic PDF generation, and mock filing adapter
+- provide a clean base for later BC Gov design-system alignment and hosted workflow work
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Boundary Rules
 
-- Configure the top-level `parserOptions` property like this:
+- intake remains upstream and owns conversational guidance plus canonical JSON updates
+- PDF generation remains deterministic and separate from the web UI
+- filing-adapter behavior remains deterministic and separate from the web UI
+- the web host should consume the same canonical JSON contract rather than inventing its own data model
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Commands
+
+Run from `web/`:
+
+```bash
+npm install
+npm run dev
+npm run test -- src/App.test.tsx
+npm run build
+npm run lint
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Next Web Slices
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Replace the read-only JSON preview with structured editors backed by the same canonical schema.
+2. Introduce BC Gov design-system components and typography once the target package versions are chosen.
+3. Add a thin API seam so the web host can call the deterministic renderer and mock filing-adapter without duplicating their logic.

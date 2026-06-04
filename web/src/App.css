@@ -1,42 +1,121 @@
-#root {
-  max-width: 1280px;
+.app-shell {
+  width: min(1120px, calc(100vw - 2rem));
   margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+.hero-panel,
+.json-panel,
+.branch-card {
+  border: 1px solid rgba(0, 51, 102, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 48px rgba(0, 51, 102, 0.08);
+}
+
+.hero-panel {
   padding: 2rem;
-  text-align: center;
+  border-radius: 28px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.eyebrow,
+.branch-kicker {
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #1f5a96;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.hero-panel h1,
+.json-panel h2,
+.branch-card h2 {
+  margin: 0;
+  color: #003366;
+}
+
+.hero-copy,
+.branch-card p,
+.json-note {
+  color: #38506a;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.status-pill {
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: #edf4fb;
+  color: #003366;
+  font-size: 0.92rem;
+  text-transform: capitalize;
+}
+
+.status-pill-active {
+  background: #003366;
+  color: #ffffff;
+}
+
+.branch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.branch-card {
+  border-radius: 22px;
+  padding: 1.4rem;
+}
+
+.json-panel {
+  border-radius: 28px;
+  padding: 1.5rem;
+}
+
+.json-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.json-note {
+  max-width: 28rem;
+  margin: 0;
+}
+
+.json-label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #003366;
+}
+
+.json-textarea {
+  width: 100%;
+  min-height: 24rem;
+  resize: vertical;
+  border: 1px solid rgba(0, 51, 102, 0.18);
+  border-radius: 20px;
+  padding: 1rem;
+  background: #f8fbff;
+  color: #102235;
+  font: 0.92rem/1.5 'Cascadia Code', 'Fira Code', Consolas, monospace;
+}
+
+@media (max-width: 900px) {
+  .branch-grid {
+    grid-template-columns: 1fr;
   }
-  to {
-    transform: rotate(360deg);
+
+  .json-panel-header {
+    flex-direction: column;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

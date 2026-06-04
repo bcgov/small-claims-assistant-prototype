@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0.0",
+  "formType": "bc-small-claims-notice-of-claim",
+  "jurisdictionDefaults": {
+    "country": "CA",
+    "province": "BC",
+    "court": "Small Claims Court",
+    "registryLocation": null
+  },
+  "observedOnlineFormOrder": [
+    {
+      "step": "claimant-information",
+      "label": "Claimant information",
+      "required": true,
+      "jsonPaths": [
+        "claimants[]"
+      ],
+      "requiredFields": [
+        "claimants[].type",
+        "claimants[].name.full",
+        "claimants[].contact.addressLines",
+        "claimants[].contact.city",
+        "claimants[].contact.province",
+        "claimants[].contact.postalCode"
+      ]
+    },
+    {
+      "step": "defendant-information",
+      "label": "Defendant information",
+      "required": true,
+      "jsonPaths": [
+        "defendants[]"
+      ],
+      "requiredFields": [
+        "defendants[].type",
+        "defendants[].name.full",
+        "defendants[].contact.addressLines",
+        "defendants[].contact.city",
+        "defendants[].contact.province",
+        "defendants[].contact.postalCode"
+      ]
+    },
+    {
+      "step": "claim-category",
+      "label": "Claim category",
+      "required": true,
+      "jsonPaths": [
+        "claim.category"
+      ],
+      "requiredFields": [
+        "claim.category"
+      ]
+    },
+    {
+      "step": "claim-narrative",
+      "label": "Narrative description of what happened",
+      "required": true,
+      "jsonPaths": [
+        "claim.summary",
+        "claim.facts"
+      ],
+      "requiredFields": [
+        "claim.summary",
+        "claim.facts"
+      ]
+    },
+    {
+      "step": "claim-location",
+      "label": "Place where the issue arose",
+      "required": true,
+      "jsonPaths": [
+        "claim.location"
+      ],
+      "requiredFields": [
+        "claim.location.city",
+        "claim.location.province",
+        "claim.location.country"
+      ]
+    },
+    {
+      "step": "incident-date",
+      "label": "Date or date range",
+      "required": true,
+      "jsonPaths": [
+        "claim.incidentDate"
+      ],
+      "requiredFields": [
+        "claim.incidentDate.type",
+        "claim.incidentDate.start"
+      ]
+    },
+    {
+      "step": "remedies",
+      "label": "Remedy line items and totals",
+      "required": true,
+      "jsonPaths": [
+        "remedies[]"
+      ],
+      "requiredFields": [
+        "remedies[].type",
+        "remedies[].description"
+      ]
+    }
+  ],
+  "clarificationRules": [
+    {
+      "whenUserIsUnsure": "claim.category",
+      "instruction": "Explain the category in plain language and ask what the claim is mainly about before choosing a controlled value."
+    },
+    {
+      "whenUserIsUnsure": "claim.incidentDate",
+      "instruction": "Ask whether there was one key date or a period of events, then capture the best known start and end dates."
+    },
+    {
+      "whenUserIsUnsure": "remedies[]",
+      "instruction": "Break the remedy into individual outcomes sought, one line item at a time, and separate monetary from non-monetary requests."
+    }
+  ],
+  "canonicalDraftTemplate": {
+    "schemaVersion": "1.0.0",
+    "formType": "bc-small-claims-notice-of-claim",
+    "jurisdiction": {
+      "country": "CA",
+      "province": "BC",
+      "court": "Small Claims Court",
+      "registryLocation": null
+    },
+    "caseMetadata": {
+      "draftId": null,
+      "createdAt": null,
+      "updatedAt": null,
+      "status": "draft",
+      "intakeChannel": "plugin",
+      "language": "en"
+    },
+    "claimants": [],
+    "defendants": [],
+    "claim": {
+      "category": null,
+      "summary": null,
+      "facts": null,
+      "location": {
+        "city": null,
+        "province": "BC",
+        "country": "CA"
+      },
+      "incidentDate": {
+        "type": null,
+        "start": null,
+        "end": null
+      }
+    },
+    "remedies": [],
+    "attachments": [],
+    "service": {
+      "certificateRequired": true,
+      "notes": null
+    },
+    "validation": {
+      "isComplete": false,
+      "missingFields": [],
+      "warnings": []
+    },
+    "generation": {
+      "pdf": {
+        "ready": false,
+        "templateVersion": "bc-scc-form1-v1"
+      },
+      "filingPayload": {
+        "ready": false
+      }
+    }
+  }
+}

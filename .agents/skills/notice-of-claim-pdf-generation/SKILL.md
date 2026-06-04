@@ -1,5 +1,6 @@
 ---
 name: notice-of-claim-pdf-generation
+plugin: small-claims-assistant
 description: >
   Use this skill when a BC Small Claims Notice of Claim draft is already captured in
   canonical JSON and the next step is deterministic PDF-generation readiness review,

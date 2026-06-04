@@ -1,5 +1,6 @@
 ---
 name: notice-of-claim-intake
+plugin: small-claims-assistant
 description: >
   This skill should be used when the user wants to start a BC Small Claims Notice of Claim,
   answer the Form 1 questions interactively, turn freeform facts into a structured intake

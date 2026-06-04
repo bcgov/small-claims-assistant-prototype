@@ -400,6 +400,27 @@
       "installedAt": "2026-06-04T16:27:21.086773Z",
       "updatedAt": "2026-06-04T16:27:21.086773Z"
     },
+    "notice-of-claim-filing-adapter": {
+      "source": "small-claims-assistant",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T20:15:37.668305Z",
+      "updatedAt": "2026-06-04T20:15:37.668305Z"
+    },
+    "notice-of-claim-intake": {
+      "source": "small-claims-assistant",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T20:15:37.668305Z",
+      "updatedAt": "2026-06-04T20:15:37.668305Z"
+    },
+    "notice-of-claim-pdf-generation": {
+      "source": "small-claims-assistant",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T20:15:37.668305Z",
+      "updatedAt": "2026-06-04T20:15:37.668305Z"
+    },
     "optimize-agent-instructions": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",

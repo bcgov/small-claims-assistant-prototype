@@ -1,0 +1,14 @@
+[
+  {
+    "id": "eval-1-positive",
+    "type": "positive",
+    "prompt": "Help me start a BC Notice of Claim and tell me what information you need from me.",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-2-negative",
+    "type": "negative",
+    "prompt": "Render the final PDF for my completed case and prepare it for filing.",
+    "should_trigger": false
+  }
+]
