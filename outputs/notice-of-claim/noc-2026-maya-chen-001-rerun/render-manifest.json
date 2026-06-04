@@ -1,0 +1,15 @@
+{
+  "status": "generated",
+  "formType": "bc-small-claims-notice-of-claim",
+  "templateVersion": "bc-scc-form1-v1",
+  "artifacts": [
+    {
+      "kind": "package-pdf",
+      "path": "outputs\\notice-of-claim\\noc-2026-maya-chen-001-rerun\\notice-of-claim-package.pdf"
+    }
+  ],
+  "notes": [
+    "Rendered notice pages are overlaid onto the archived Form 1 package template.",
+    "Long-form overflow handling and companion-page refinement remain separate follow-on work."
+  ]
+}

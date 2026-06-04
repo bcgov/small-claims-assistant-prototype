@@ -5,11 +5,16 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
-import shutil
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
+
+from pypdf import PdfReader, PdfWriter
+from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfgen import canvas
 
 
 HERE = Path(__file__).resolve().parent
@@ -22,6 +27,9 @@ TEMPLATE_PATH = (
     / "small-claims"
     / "scl001-notice-of-claim-template.pdf"
 )
+NOTICE_PAGE_INDEXES = {2}
+PAGE_WIDTH = 612
+PAGE_HEIGHT = 792
 
 
 # Keep file loading deterministic and isolated from host-specific state.
@@ -49,13 +57,176 @@ def validate_ready_for_pdf(case_data: dict[str, Any]) -> None:
         raise ValueError("Case is not ready for PDF generation: caseMetadata.status must be ready-for-pdf or generated.")
 
 
-# Emit a deterministic initial package artifact while the full field-binding renderer is still being built.
-def render_pdf_package(output_dir: Path) -> Path:
-    """Copy the archived Form 1 template into the output directory as the first package artifact."""
+# Keep PDF text placement predictable by normalizing structured case data into printable strings.
+def flatten_address(contact: dict[str, Any]) -> list[str]:
+    """Return a mailing address as printable lines."""
+
+    address_lines = [line for line in contact.get("addressLines", []) if line]
+    city_parts = [contact.get("city"), contact.get("province"), contact.get("postalCode")]
+    city_line = ", ".join(part for part in city_parts[:2] if part)
+    if city_parts[2]:
+        city_line = f"{city_line} {city_parts[2]}".strip()
+    if city_line:
+        address_lines.append(city_line)
+    return address_lines
+
+
+# Convert the canonical claim date object into one concise string for the court form.
+def format_incident_date(incident_date: dict[str, Any]) -> str:
+    """Return the claim date or date range as printed text."""
+
+    if not incident_date:
+        return ""
+
+    date_type = incident_date.get("type")
+    start = incident_date.get("start", "")
+    end = incident_date.get("end", "")
+
+    if date_type == "range" and start and end:
+        return f"{start} to {end}"
+
+    return start
+
+
+# Keep money presentation stable across tests and downstream review.
+def format_money(value: float) -> str:
+    """Return a currency value in fixed two-decimal form."""
+
+    return f"{value:.2f}"
+
+
+# Simple width-based wrapping is sufficient for the first deterministic overlay slice.
+def wrap_text(text: str, *, font_name: str, font_size: int, max_width: float) -> list[str]:
+    """Wrap text into printable lines for a fixed-width form region."""
+
+    if not text:
+        return []
+
+    wrapped_lines: list[str] = []
+    paragraphs = [paragraph.strip() for paragraph in text.splitlines() if paragraph.strip()]
+    for paragraph in paragraphs:
+        current_line = ""
+        for word in paragraph.split():
+            candidate = word if not current_line else f"{current_line} {word}"
+            if stringWidth(candidate, font_name, font_size) <= max_width:
+                current_line = candidate
+                continue
+
+            if current_line:
+                wrapped_lines.append(current_line)
+            current_line = word
+
+        if current_line:
+            wrapped_lines.append(current_line)
+
+    return wrapped_lines
+
+
+# All drawing helpers write text overlays only; the official template remains the page background.
+def draw_lines(pdf: canvas.Canvas, *, lines: list[str], x: float, y: float, leading: float, font_size: int) -> None:
+    """Draw multiple lines of text from a top-left anchor."""
+
+    text_object = pdf.beginText(x, y)
+    text_object.setFont("Helvetica", font_size)
+    text_object.setLeading(leading)
+    for line in lines:
+        text_object.textLine(line)
+    pdf.drawText(text_object)
+
+
+# Render the main notice page overlay for one copy of the form package.
+def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
+    """Overlay the claimant, defendant, facts, and remedies onto one notice form page."""
+
+    claimant = (case_data.get("claimants") or [{}])[0]
+    defendant = (case_data.get("defendants") or [{}])[0]
+    claim = case_data.get("claim", {})
+    remedies = case_data.get("remedies", [])
+    jurisdiction = case_data.get("jurisdiction", {})
+
+    claimant_lines = [claimant.get("name", {}).get("full", "")]
+    claimant_lines.extend(flatten_address(claimant.get("contact", {})))
+
+    defendant_lines = [defendant.get("name", {}).get("full", "")]
+    defendant_lines.extend(flatten_address(defendant.get("contact", {})))
+
+    detail_text = claim.get("facts", "")
+    detail_lines = wrap_text(detail_text, font_name="Helvetica", font_size=9, max_width=430)
+    detail_lines = detail_lines[:18]
+
+    where_text = ", ".join(
+        part for part in [
+            claim.get("location", {}).get("city"),
+            claim.get("location", {}).get("province"),
+            claim.get("location", {}).get("country"),
+        ] if part
+    )
+    when_text = format_incident_date(claim.get("incidentDate", {}))
+
+    remedy_lines = remedies[:5]
+    total_amount = sum(
+        float(remedy.get("amount", {}).get("value", 0.0))
+        for remedy in remedies
+        if remedy.get("amount", {}).get("value") is not None
+    )
+
+    pdf.setFont("Helvetica", 9)
+    pdf.drawString(480, 734, str(jurisdiction.get("registryLocation", "")))
+
+    draw_lines(pdf, lines=claimant_lines, x=140, y=646, leading=11, font_size=9)
+    draw_lines(pdf, lines=defendant_lines, x=140, y=612, leading=11, font_size=9)
+    draw_lines(pdf, lines=detail_lines, x=156, y=492, leading=11, font_size=9)
+    pdf.drawString(108, 326, where_text)
+    pdf.drawString(442, 326, when_text)
+
+    row_y = 264
+    for remedy in remedy_lines:
+        description = remedy.get("description", "")
+        amount_value = float(remedy.get("amount", {}).get("value", 0.0))
+        wrapped_description = wrap_text(description, font_name="Helvetica", font_size=9, max_width=360)
+        wrapped_description = wrapped_description[:1] or [""]
+        pdf.drawString(132, row_y, wrapped_description[0])
+        pdf.drawRightString(548, row_y, format_money(amount_value))
+        row_y -= 21
+
+    pdf.drawRightString(548, 84, format_money(total_amount))
+
+
+# Build an overlay PDF in memory so the official template can remain the static background.
+def build_overlay(case_data: dict[str, Any], page_count: int) -> io.BytesIO:
+    """Create a page-aligned overlay PDF for the notice package."""
+
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=(PAGE_WIDTH, PAGE_HEIGHT))
+
+    for page_index in range(page_count):
+        if page_index in NOTICE_PAGE_INDEXES:
+            draw_notice_page(pdf, case_data)
+        pdf.showPage()
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+
+# Emit a rendered package by merging the case-data overlay onto the official template.
+def render_pdf_package(case_data: dict[str, Any], output_dir: Path) -> Path:
+    """Render the notice package PDF into the target directory."""
 
     output_dir.mkdir(parents=True, exist_ok=True)
     package_path = output_dir / "notice-of-claim-package.pdf"
-    shutil.copyfile(TEMPLATE_PATH, package_path)
+
+    template_reader = PdfReader(str(TEMPLATE_PATH))
+    overlay_reader = PdfReader(build_overlay(case_data, len(template_reader.pages)))
+    writer = PdfWriter()
+
+    for page_index, template_page in enumerate(template_reader.pages):
+        page = template_page
+        overlay_page = overlay_reader.pages[page_index]
+        page.merge_page(overlay_page)
+        writer.add_page(page)
+
+    writer.write(package_path)
     return package_path
 
 
@@ -80,8 +251,8 @@ def build_manifest(case_data: dict[str, Any], package_path: Path) -> dict[str, A
             }
         ],
         "notes": [
-            "Current renderer slice emits the archived Form 1 template package scaffold.",
-            "Field binding, overflow handling, and companion-page assembly remain separate follow-on work.",
+            "Rendered notice pages are overlaid onto the archived Form 1 package template.",
+            "Long-form overflow handling and companion-page refinement remain separate follow-on work.",
         ],
     }
 
@@ -112,7 +283,7 @@ def main() -> int:
     try:
         case_data = load_case_payload(input_path)
         validate_ready_for_pdf(case_data)
-        package_path = render_pdf_package(output_dir)
+        package_path = render_pdf_package(case_data, output_dir)
         manifest = build_manifest(case_data, package_path)
         write_manifest(output_dir, manifest)
     except Exception as exc:  # pragma: no cover - exercised through subprocess tests.

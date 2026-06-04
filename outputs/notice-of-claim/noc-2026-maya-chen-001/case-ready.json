@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "1.0.0",
+  "formType": "bc-small-claims-notice-of-claim",
+  "jurisdiction": {
+    "country": "CA",
+    "province": "BC",
+    "court": "Small Claims Court",
+    "registryLocation": "Victoria"
+  },
+  "caseMetadata": {
+    "draftId": "noc-2026-maya-chen-001",
+    "createdAt": "2026-06-04T20:41:13Z",
+    "updatedAt": "2026-06-04T20:41:13Z",
+    "status": "ready-for-pdf",
+    "intakeChannel": "plugin",
+    "language": "en"
+  },
+  "claimants": [
+    {
+      "id": "claimant-1",
+      "type": "individual",
+      "name": {
+        "full": "Maya Chen"
+      },
+      "contact": {
+        "addressLines": [
+          "2148 Oak Street"
+        ],
+        "city": "Victoria",
+        "province": "BC",
+        "postalCode": "V8R 3M2"
+      }
+    }
+  ],
+  "defendants": [
+    {
+      "id": "defendant-1",
+      "type": "business",
+      "name": {
+        "full": "Island View Auto Repairs Ltd."
+      },
+      "contact": {
+        "addressLines": [
+          "880 Douglas Street"
+        ],
+        "city": "Victoria",
+        "province": "BC",
+        "postalCode": "V8W 2B7"
+      }
+    }
+  ],
+  "claim": {
+    "category": "goods-or-services",
+    "summary": "Maya Chen paid Island View Auto Repairs Ltd. $2,400 for a transmission replacement that was not actually completed.",
+    "facts": "Maya Chen paid Island View Auto Repairs Ltd. $2,400 to replace the transmission in her 2013 Honda Civic. The shop said the repair would be completed by April 12, 2026. After she picked up the car, it stopped working again on April 14, 2026. Maya had the car towed to another mechanic, who inspected it on April 15, 2026 and told her the original faulty transmission was still installed and had not been replaced. Maya paid $100 for the inspection and was left without reliable transportation.",
+    "location": {
+      "city": "Victoria",
+      "province": "BC",
+      "country": "CA"
+    },
+    "incidentDate": {
+      "type": "range",
+      "start": "2026-04-12",
+      "end": "2026-04-15"
+    }
+  },
+  "remedies": [
+    {
+      "id": "remedy-1",
+      "type": "money",
+      "description": "Refund of the $2,400 paid for the transmission replacement that was not properly done.",
+      "amount": {
+        "currency": "CAD",
+        "value": 2400.0
+      }
+    },
+    {
+      "id": "remedy-2",
+      "type": "money",
+      "description": "Reimbursement of towing charges paid after the car stopped working again.",
+      "amount": {
+        "currency": "CAD",
+        "value": 150.0
+      }
+    },
+    {
+      "id": "remedy-3",
+      "type": "money",
+      "description": "Reimbursement of the second mechanic's diagnosis or inspection fee.",
+      "amount": {
+        "currency": "CAD",
+        "value": 100.0
+      }
+    }
+  ],
+  "attachments": [],
+  "service": {
+    "certificateRequired": true,
+    "notes": null
+  },
+  "validation": {
+    "isComplete": true,
+    "missingFields": [],
+    "warnings": [
+      {
+        "code": "CATEGORY_MAPPING_UNCONFIRMED",
+        "message": "The claim category is a best-fit mapping from the intake facts and should be confirmed against the official form labels during final review."
+      }
+    ]
+  },
+  "generation": {
+    "pdf": {
+      "ready": true,
+      "templateVersion": "bc-scc-form1-v1"
+    },
+    "filingPayload": {
+      "ready": false
+    }
+  }
+}
