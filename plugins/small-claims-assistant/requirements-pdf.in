@@ -1,0 +1,4 @@
+-r requirements-core.in
+
+# Deterministic PDF tooling for the Notice of Claim generation slice.
+pypdf>=5.6

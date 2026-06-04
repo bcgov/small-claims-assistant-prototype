@@ -57,6 +57,13 @@
       "installedAt": "2026-06-04T16:27:21.086773Z",
       "updatedAt": "2026-06-04T16:27:21.086773Z"
     },
+    "brainstorming": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "business-requirements-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -225,6 +232,13 @@
       "installedAt": "2026-06-03T19:10:53.151105Z",
       "updatedAt": "2026-06-03T19:10:53.151105Z"
     },
+    "dispatching-parallel-agents": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "dual-loop": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -253,6 +267,13 @@
       "installedAt": "2026-06-04T16:27:21.086773Z",
       "updatedAt": "2026-06-04T16:27:21.086773Z"
     },
+    "executing-plans": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "exploration-handoff": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -280,6 +301,13 @@
       "computedHash": "",
       "installedAt": "2026-06-03T19:10:53.151105Z",
       "updatedAt": "2026-06-03T19:10:53.151105Z"
+    },
+    "finishing-a-development-branch": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
     },
     "fix-plugin-paths": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -519,6 +547,13 @@
       "installedAt": "2026-06-03T19:10:53.151105Z",
       "updatedAt": "2026-06-03T19:10:53.151105Z"
     },
+    "receiving-code-review": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "red-team-bundler": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -532,6 +567,13 @@
       "computedHash": "",
       "installedAt": "2026-06-04T16:27:05.710691Z",
       "updatedAt": "2026-06-04T16:27:05.710691Z"
+    },
+    "requesting-code-review": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
     },
     "self-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -680,6 +722,13 @@
       "installedAt": "2026-06-03T19:11:16.822087Z",
       "updatedAt": "2026-06-03T19:11:16.822087Z"
     },
+    "subagent-driven-development": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "subagent-driven-prototyping": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -701,12 +750,26 @@
       "installedAt": "2026-06-04T16:27:21.086773Z",
       "updatedAt": "2026-06-04T16:27:21.086773Z"
     },
+    "systematic-debugging": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
     "task-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-03T19:10:50.791726Z",
       "updatedAt": "2026-06-04T16:27:25.037628Z"
+    },
+    "test-driven-development": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -735,6 +798,27 @@
       "computedHash": "",
       "installedAt": "2026-06-03T19:10:53.151105Z",
       "updatedAt": "2026-06-03T19:10:53.151105Z"
+    },
+    "using-git-worktrees": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
+    "using-superpowers": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
+    "verification-before-completion": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
     },
     "vibe-behavioral-test-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -798,6 +882,20 @@
       "computedHash": "",
       "installedAt": "2026-06-03T19:10:53.151105Z",
       "updatedAt": "2026-06-03T19:10:53.151105Z"
+    },
+    "writing-plans": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
+    },
+    "writing-skills": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-04T18:00:31.418594Z",
+      "updatedAt": "2026-06-04T18:00:31.418594Z"
     }
   }
 }

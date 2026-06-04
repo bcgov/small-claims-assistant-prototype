@@ -1,0 +1,87 @@
+# small-claims-assistant Plugin
+
+Generated via the plugin scaffold workflow and narrowed to the first usable slice: guided Notice of Claim intake for BC Small Claims.
+
+## Purpose
+This plugin hosts the plugin-first path for the BC Small Claims assistant. The first slice focuses on interactive intake for Form 1 Notice of Claim, normalizing user answers into the canonical case model that later renderer and validation skills will consume.
+
+The active architecture keeps intake-to-JSON separate from JSON-to-PDF generation so the canonical case contract stays reusable across validation, deterministic rendering, a future filing adapter, and a later BC Gov web application path.
+
+## Current Components
+
+### Agents
+- `agents/notice-of-claim-intake-agent.md` — interactive intake sub-agent for guided questioning and canonical-case capture
+
+### Skills
+- `skills/notice-of-claim-intake/` — interactive intake skill scaffold for the Notice of Claim interview flow
+- `skills/notice-of-claim-pdf-generation/` — deterministic generation skill scaffold for readiness checks and renderer handoff
+
+### Scripts
+- `scripts/write_notice_of_claim_json.py` — deterministic writer that merges partial intake data onto the canonical Notice of Claim draft template
+- `scripts/render_notice_of_claim_pdf.py` — deterministic renderer entrypoint that validates canonical JSON readiness and emits a PDF artifact manifest
+
+### Data Assets
+- `assets/case-models/notice-of-claim/notice-of-claim-intake-definition.json` — observed Filing Assistant question order plus canonical JSON draft template
+
+### Assets
+- `assets/templates/forms/small-claims/scl001-notice-of-claim-template.pdf` — authoritative archived Form 1 template used for deterministic rendering work
+
+### Dependency Files
+- `requirements-core.in` / `requirements-core.txt` — plugin-level shared Python dependency baseline
+- `requirements-pdf.in` / `requirements-pdf.txt` — managed PDF-generation dependency slice for renderer work
+
+## Notes
+- `plugin.json` stays minimal for compatibility with the local validator and Claude plugin auto-discovery.
+- `plugin.yaml` carries the explicit skill inventory for Hermes-style compatibility.
+- The intake skill remains limited to guided intake and canonical JSON updates.
+- The PDF-generation slice is intentionally separate so deterministic rendering can evolve without collapsing back into the intake skill.
+
+## Backlog Visibility
+
+The broader explored product path remains in view while the current implementation stays narrow:
+
+- reusable skill decomposition beyond v1 intake and generation
+- canonical Notice of Claim JSON as the shared source of truth
+- deterministic renderer expansion from template scaffold to field binding and overflow handling
+- future filing-adapter boundary that consumes canonical JSON
+- future BC Gov design-system web app path reusing the same legal-output core
+
+## Directory Structure
+
+```text
+small-claims-assistant/
+├── .claude-plugin/
+│   └── plugin.json
+├── __init__.py
+├── .claude/
+│   └── settings.json
+├── agents/
+│   └── notice-of-claim-intake-agent.md
+├── assets/
+│   ├── case-models/notice-of-claim/notice-of-claim-intake-definition.json
+│   └── templates/forms/small-claims/scl001-notice-of-claim-template.pdf
+├── plugin.yaml
+├── requirements-core.in
+├── requirements-core.txt
+├── requirements-pdf.in
+├── requirements-pdf.txt
+├── README.md
+├── references/
+├── tests/
+│   └── test_render_notice_of_claim_pdf.py
+├── scripts/
+│   ├── render_notice_of_claim_pdf.py
+│   └── write_notice_of_claim_json.py
+└── skills/
+    └── notice-of-claim-intake/
+        ├── SKILL.md
+        ├── assets/
+        ├── evals/
+        │   └── evals.json
+        ├── scripts/
+        └── references/
+            └── acceptance-criteria.md
+    └── notice-of-claim-pdf-generation/
+        ├── SKILL.md
+        └── scripts/
+```

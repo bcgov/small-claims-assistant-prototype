@@ -12,6 +12,12 @@
         "exploration-cycle-plugin",
         "spec-kitty"
       ]
+    },
+    {
+      "source": "obra/superpowers",
+      "plugins": [
+        "superpowers"
+      ]
     }
   ]
 }

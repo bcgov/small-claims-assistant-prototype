@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Write Notice Of Claim JSON",
+    "description": "Merge a partial intake payload onto the canonical Notice of Claim case template.",
+    "files": [
+      "plugins/small-claims-assistant/scripts/write_notice_of_claim_json.py"
+    ]
+  },
+  {
+    "title": "Render Notice Of Claim PDF",
+    "description": "Validate canonical JSON readiness and emit deterministic PDF-generation artifacts.",
+    "files": [
+      "plugins/small-claims-assistant/scripts/render_notice_of_claim_pdf.py"
+    ]
+  }
+]

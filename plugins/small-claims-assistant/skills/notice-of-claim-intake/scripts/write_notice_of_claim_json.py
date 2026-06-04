@@ -1,0 +1,1 @@
+../../../scripts/write_notice_of_claim_json.py

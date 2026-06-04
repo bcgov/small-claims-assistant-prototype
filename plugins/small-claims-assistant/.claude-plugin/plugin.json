@@ -1,0 +1,9 @@
+{
+  "name": "small-claims-assistant",
+  "version": "0.1.0",
+  "description": "Plugin-first BC Small Claims Notice of Claim assistant with guided intake and deterministic PDF generation.",
+  "author": {
+    "name": "Rich Frem",
+    "email": ""
+  }
+}
