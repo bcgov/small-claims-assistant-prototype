@@ -38,14 +38,20 @@ User trigger, preserved verbatim:
   - optional mock or future e-filing API payload/endpoint path
   - canonical case JSON as the machine-readable source-of-truth output
 - A future CEIS integration is desirable but should be treated as optional and decoupled from the core intake and PDF-generation path.
-- The product is now intended to live in this standalone repository, not in `agent-plugins-skills`.
+- The plugin, skills, and sub-agent should be deployed from a new standalone repository, not from `agent-plugins-skills`.
 - The product should support two delivery paths to the same legal output core:
-  - an interactive agent skill/plugin hosted in this repo as the preferred initial path
+  - an interactive agent skill/plugin path as the preferred initial path
   - a standalone web app as a secondary path with higher hosting and model-cost implications
 - Discovery work in this repo should continue to follow the exploration-cycle process and local `.agent/rules` files.
 - The plugin/sub-agent route is economically attractive because the AI assistance can use the user's own AI environment and token budget rather than requiring province-hosted model usage.
 - A web app with AI clarification support would require hosted API access, infrastructure, and an operating budget for model calls.
 - The plugin-first skills and sub-agents should also be treated as a prototype and reuse candidate for any later API-backed AI support in the web app.
+- The future web app should follow the BC Government design system rather than a custom design language.
+- The shared repo at `temp/repos/claude-design-bc-gov-design-system` provides local reference material for BC Gov tokens, fonts, previews, and component patterns.
+- Official BC Gov packages should be treated as the primary source of truth for the web path:
+  - `@bcgov/design-system-react-components`
+  - `@bcgov/bc-sans`
+  - `@bcgov/design-tokens`
 
 ## Current Reference System Behavior
 
@@ -85,6 +91,8 @@ User trigger, preserved verbatim:
 [INTAKE DRAFT - confirm] A skill-owned scripts folder, likely using Python, is a strong candidate for deterministic PDF generation from canonical case data.
 
 [CONFIRMED] If the web app later adds hosted AI support, it should preferentially reuse the same skills and sub-agents developed for the plugin-first path.
+
+[CONFIRMED] If the web app is built, it should align to the BC Government design system and use the shared BC Gov design repo as a working implementation reference.
 
 ## Open Questions
 

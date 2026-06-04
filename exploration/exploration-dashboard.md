@@ -47,7 +47,7 @@
 
 | Phase | Completed | Notes |
 |-------|-----------|-------|
-| Phase 1 | In progress | Reviewed BC Filing Assistant Notice of Claim flow, generated mock PDF package, captured layout evidence from screenshots, narrowed first scope to Notice of Claim only, and confirmed a two-path standalone product direction: web app plus interactive plugin/agent skill. |
+| Phase 1 | In progress | Reviewed BC Filing Assistant Notice of Claim flow, generated mock PDF package, captured layout evidence from screenshots, narrowed first scope to Notice of Claim only, confirmed a two-path standalone product direction, defined the canonical case JSON as a shared output contract, and drafted host-agnostic plugin/sub-agent boundaries for later web API reuse. |
 | Phase 2 | - | Not started. |
 | Phase 3 | - | Not started. |
 | Phase 4 | - | Not started. |

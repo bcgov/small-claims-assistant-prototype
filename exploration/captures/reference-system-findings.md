@@ -57,6 +57,8 @@ Observed page types from screenshots:
 - The plugin-first approach is operationally attractive because clarification help can run inside the user's own AI environment instead of requiring province-hosted model calls.
 - A skill can pair AI-guided intake with deterministic local scripts, likely Python-based, to generate the final PDF package after answers are collected and validated.
 - Those plugin skills and sub-agents should also be viewed as the prototype for any later hosted AI support in a web app, so the conversational guidance layer can be reused instead of reimplemented.
+- If the web app path is pursued, the visual and component direction should follow the BC Government design system rather than an independent design language.
+- A shared BC Gov design reference repo is available locally under `temp/repos/claude-design-bc-gov-design-system`, including token CSS, BC Sans fonts, previews, and UI kit material that can accelerate design alignment.
 - Current candidate outputs are:
   - exact Notice of Claim PDF package
   - optional mock or future direct e-filing API output

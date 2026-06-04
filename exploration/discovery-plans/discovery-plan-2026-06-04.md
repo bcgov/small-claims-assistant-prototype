@@ -28,13 +28,14 @@ The web application path remains strategically valuable, but it should be treate
 ## Confirmed Scope For This Slice
 
 - Form scope is Notice of Claim only.
-- The repository is standalone and is not part of `agent-plugins-skills`.
-- The preferred initial AI-enabled experience is an interactive agent skill/plugin hosted in this repo.
+- The plugin, skills, and sub-agent should be deployed from a new standalone repository and are not part of `agent-plugins-skills`.
 - A standalone web app remains in scope as a secondary delivery path, not the initial primary investment.
 - The generated PDF must match the official BC Notice of Claim package format exactly enough to be court-ready.
 - The plugin/agent path should be able to guide users interactively through each question, explain legal or procedural wording, help users elaborate when they are unsure, and reduce the need for external searching.
 - The final PDF generation step should be implemented deterministically, likely through embedded scripts under a skill-owned scripts folder rather than through model-generated document output.
 - The initial plugin skills and sub-agents should be designed as reusable AI workflow assets, not one-off channel-specific logic.
+- If and when the web app is built, it should follow the BC Government design system using official BC Gov packages and tokens as the primary source of truth.
+- The shared reference repo under `temp/repos/claude-design-bc-gov-design-system` should be treated as an accelerator and working reference for BC Gov fonts, tokens, previews, and UI kits during discovery and implementation.
 
 ---
 
@@ -99,7 +100,25 @@ The same principle should apply to the AI layer where practical: the skills and 
 - Each clarification turn in a hosted web flow would create direct model costs.
 - The web path also introduces infrastructure, authentication, API governance, and operational support questions that the plugin-first path can avoid at the start.
 - If a web app is added later, the preferred path is to reuse the same skills, sub-agents, and decision boundaries already proven in the plugin flow, exposing them through an API-capable application layer rather than inventing a second AI workflow stack.
+- The web path should also align visually with the BC Government design system rather than inventing a custom UI language.
+- Current design evidence includes a shared BC Gov design-system repo containing token CSS, BC Sans font assets, previews, and UI kit material that can shorten implementation time.
 - For that reason, the web app should be treated as a later expansion or parallel non-AI baseline unless a clear funding and operating model is defined.
+
+---
+
+## Web UI Design Source Of Truth
+
+- Primary design direction for the web app should come from the BC Government design system.
+- Official packages called out in the shared guidance should remain the source of truth:
+	- `@bcgov/design-system-react-components`
+	- `@bcgov/bc-sans`
+	- `@bcgov/design-tokens`
+- The shared repo at `temp/repos/claude-design-bc-gov-design-system` provides practical local reference material including:
+	- `bc-design-system/colors_and_type.css`
+	- BC Sans font files
+	- preview screens
+	- UI kit assets
+- Material UI should only be used as a fallback for components not covered by the BC Gov component library, and any fallback should be themed to match BC Gov tokens closely.
 
 ---
 
