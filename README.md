@@ -96,13 +96,29 @@ The web app covers all screens of the original Filing Assistant:
 
 ### Running the Web App
 
+**Quickest way — one command from the repo root:**
+
+```powershell
+python start_web.py
+```
+
+This script will:
+1. Check that Node.js is installed
+2. Free port 5173 if something else is already using it
+3. Run `npm install` automatically if `node_modules` is missing
+4. Start the Vite dev server
+
+Then open [http://localhost:5173](http://localhost:5173) in your browser.
+
+**Manual alternative:**
+
 ```powershell
 cd web
-npm install
+npm install   # only needed once
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+**Requirements:** Python 3.9+ and Node.js 18+ must be on your PATH.
 
 ### Tech Stack
 
