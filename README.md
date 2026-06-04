@@ -169,11 +169,32 @@ small-claims-assistant/
 
 ## Status
 
-Both prototypes are functional end-to-end. Neither is production-ready — they demonstrate the architecture and UX direction for a future production system.
+**Both prototypes are proof-of-concept only. Neither is production-ready.**
 
-**Next steps (not yet implemented):**
+### Python PDF Renderer — POC, not QA'd
+
+`plugins/small-claims-assistant/scripts/render_notice_of_claim_pdf.py` has not been through any quality assurance. Known limitations and areas requiring further work before it could be considered production-ready:
+
+- **Field alignment** — coordinate-based overlays (`reportlab` + `pypdf`) have not been verified against the official Form 1 template at all zoom levels and print sizes. Fields may be misaligned on different PDF viewers or printers.
+- **Multi-page overflow** — no handling for narrative or remedy text that exceeds the space available on a single page.
+- **Character encoding** — special characters, accented letters, and legal symbols have not been tested.
+- **All claim categories** — only the "Defective Goods / Services" path has been exercised. The 9 other claim categories have category-specific fields that are not yet rendered.
+- **Multiple claimants / defendants** — the renderer handles one claimant and one defendant. The form supports multiple parties; that logic is not implemented.
+- **Validation gaps** — the readiness check catches missing required fields but does not validate formats (postal codes, dates, dollar amounts).
+- **Print-ready output** — no testing against court registry submission standards (PDF/A compliance, font embedding, etc.).
+
+This renderer demonstrates the architecture (canonical JSON → deterministic PDF overlay) but would require significant iteration, field-by-field QA against the official form, and testing across representative case scenarios before producing court-ready documents.
+
+### Web App
+
+Functional end-to-end as a guided intake prototype. No AI API is connected — the clarification path uses a static keyword lookup (zero token cost). The Azure Copilot seam is marked with a TODO comment for future wiring.
+
+### Next Steps
+
+- QA and iterate the PDF renderer field-by-field against the official Form 1 template
 - Connect web app clarification path to Azure Copilot API
 - Bind web app collected answers to the canonical JSON writer script
 - Wire canonical JSON through to the PDF renderer from the web path
 - Add save/restore (session persistence)
 - Accessibility audit against WCAG 2.1 AA
+- Test across all 10 claim categories end-to-end
