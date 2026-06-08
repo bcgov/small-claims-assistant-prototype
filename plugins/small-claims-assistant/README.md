@@ -7,6 +7,36 @@ This plugin hosts the plugin-first path for the BC Small Claims assistant. The f
 
 The active architecture keeps intake-to-JSON separate from JSON-to-PDF generation so the canonical case contract stays reusable across validation, deterministic rendering, a future filing adapter, and a later BC Gov web application path.
 
+## How users should start
+
+Start with the intake flow. A normal user should begin by asking for help with the Notice of Claim itself, not by naming scripts, JSON, or internal files.
+
+Good starting requests are:
+
+- `Help me fill out a BC Small Claims Notice of Claim.`
+- `Start a Notice of Claim intake interview.`
+- `I want to make a small claims claim in BC. Walk me through the form.`
+- `I have some facts already; help me turn them into a Notice of Claim draft.`
+
+From there, the plugin is meant to route into the `notice-of-claim-intake-agent` using the `notice-of-claim-intake` skill. That intake experience is the front door: it asks a small number of questions at a time, captures party details, claim amount, narrative, dates, remedies, and then asks the user to confirm the summary before moving on.
+
+The intended user flow is:
+
+1. Start by describing the claim in plain English.
+2. Let the intake agent guide the interview and collect the missing facts in small batches.
+3. Confirm the captured facts when the intake summary is shown.
+4. Ask for the next stage only after intake is complete enough.
+
+Typical next-stage requests are:
+
+- `Prepare the draft PDF.`
+- `Check whether this is ready for the PDF.`
+- `Prepare the filing submission step.`
+
+In practice, users should not need to know the agent or skill names. The natural entry point is a plain-language request such as `Help me start a BC Small Claims Notice of Claim.`
+
+For a shorter user-facing guide, see `START_HERE.md`.
+
 ## Current Components
 
 ### Agents
