@@ -55,6 +55,32 @@ Intake (agent/skill) → canonical JSON → renderer script → PDF artifact
 
 AI involvement ends at intake and validation. PDF rendering must be deterministic — no AI in the render path.
 
+## Plugin User Entry Guidance
+
+When explaining how to use the `plugins/small-claims-assistant/` plugin, direct users to start with the intake flow in plain English rather than naming scripts, JSON, or internal files.
+
+Use examples such as:
+
+- `Help me fill out a BC Small Claims Notice of Claim.`
+- `Start a Notice of Claim intake interview.`
+- `I want to make a small claims claim in BC. Walk me through the form.`
+- `I have some facts already; help me turn them into a Notice of Claim draft.`
+
+The expected sequence is:
+
+1. Start with the Notice of Claim itself.
+2. Route into intake first.
+3. Gather facts in short batches and confirm the summary.
+4. Only then move to PDF generation or filing-preparation steps.
+
+Good next-stage requests after intake confirmation are:
+
+- `Prepare the draft PDF.`
+- `Check whether this is ready for the PDF.`
+- `Prepare the filing submission step.`
+
+Treat `plugins/small-claims-assistant/START_HERE.md` as the user-facing quick-start reference for this flow.
+
 ## Exploration Artifacts
 
 Keep these files current during discovery work:

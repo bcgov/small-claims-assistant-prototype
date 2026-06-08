@@ -60,6 +60,32 @@ Current standing assumptions for this repo:
 - AI belongs upstream in intake, guidance, drafting assistance, and validation. Final form rendering must be deterministic.
 - A future CEIS integration may exist as an optional downstream adapter, but it should not be coupled to the core intake and PDF-generation workflow.
 
+## Plugin User Entry Guidance
+
+When explaining how to use the `plugins/small-claims-assistant/` plugin, direct users to start with the intake flow in plain English rather than naming scripts, JSON, or internal files.
+
+Use examples such as:
+
+- `Help me fill out a BC Small Claims Notice of Claim.`
+- `Start a Notice of Claim intake interview.`
+- `I want to make a small claims claim in BC. Walk me through the form.`
+- `I have some facts already; help me turn them into a Notice of Claim draft.`
+
+The expected sequence is:
+
+1. Start with the Notice of Claim itself.
+2. Route into intake first.
+3. Gather facts in short batches and confirm the summary.
+4. Only then move to PDF generation or filing-preparation steps.
+
+Good next-stage requests after intake confirmation are:
+
+- `Prepare the draft PDF.`
+- `Check whether this is ready for the PDF.`
+- `Prepare the filing submission step.`
+
+Treat `plugins/small-claims-assistant/START_HERE.md` as the user-facing quick-start reference for this flow.
+
 ## Plugin Improvement Context
 
 - This repo may be used to refine prompts, skills, and agent behavior for the exploration-cycle plugin.

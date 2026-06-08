@@ -34,6 +34,32 @@ submit_notice_of_claim_mock_api.py  ← mock filing adapter (future CEIS integra
 
 **Key design principle:** AI belongs upstream (intake, guidance, validation). PDF rendering is deterministic — no AI in the render path. The canonical JSON is the contract between the two halves.
 
+### How users should start
+
+Users should start with the intake flow in plain English, not by naming scripts, JSON, or internal files.
+
+Good starting requests are:
+
+- `Help me fill out a BC Small Claims Notice of Claim.`
+- `Start a Notice of Claim intake interview.`
+- `I want to make a small claims claim in BC. Walk me through the form.`
+- `I have some facts already; help me turn them into a Notice of Claim draft.`
+
+The intended flow is:
+
+1. Describe the claim in plain English.
+2. Let the intake agent ask for the missing facts in small batches.
+3. Confirm the captured facts when the summary is shown.
+4. Ask for the next stage only after intake is complete enough.
+
+Typical next-stage requests are:
+
+- `Prepare the draft PDF.`
+- `Check whether this is ready for the PDF.`
+- `Prepare the filing submission step.`
+
+For a plugin-specific quick guide, see `plugins/small-claims-assistant/START_HERE.md`.
+
 ### Components
 
 | Component | Purpose |
