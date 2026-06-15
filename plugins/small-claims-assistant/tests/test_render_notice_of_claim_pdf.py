@@ -491,5 +491,34 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
         self.assertIn("604-555-1234", page_text, "Defendant phone not rendered on notice page")
 
 
+    def test_defendant_province_and_postal_on_city_row(self) -> None:
+        """Province and postal code must be on the same writing line as city (y within ±4 of city y)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+
+        city_y = self.find_y_for_text(positions, "Burnaby")
+        self.assertIsNotNone(city_y, "Defendant city 'Burnaby' not found on notice page")
+
+        # Province "BC" in the TO section (x > 250 to exclude 'BC' in page heading)
+        prov_entries = [(y, x, t) for y, x, t in positions
+                        if t.strip() == "BC" and x > 250 and 540 < y < 580]
+        self.assertTrue(prov_entries, "Province 'BC' not found in TO section (x>250, y 540–580)")
+        prov_y = prov_entries[0][0]
+        self.assertAlmostEqual(
+            prov_y, city_y, delta=4.0,
+            msg=f"Province y={prov_y} must be on city writing line y={city_y} (±4pt)",
+        )
+
+        # Postal code in the TO section
+        postal_entries = [(y, x, t) for y, x, t in positions if "V5C" in t]
+        self.assertTrue(postal_entries, "Postal code 'V5C 2B2' not found on notice page")
+        postal_y = postal_entries[0][0]
+        self.assertAlmostEqual(
+            postal_y, city_y, delta=4.0,
+            msg=f"Postal code y={postal_y} must be on city writing line y={city_y} (±4pt)",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

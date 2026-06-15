@@ -233,9 +233,9 @@ def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
     if def_city:
         pdf.drawString(_TO_DATA_X, _TO_CITY_Y, def_city)          # city only — no province
     if def_prov:
-        pdf.drawString(_TO_PROV_X, _TO_PROV_POSTAL_Y, def_prov)   # province in PROV. column
+        pdf.drawString(_TO_PROV_X, _TO_CITY_Y, def_prov)          # province on same writing line as city
     if def_postal:
-        pdf.drawString(_TO_POSTAL_X, _TO_PROV_POSTAL_Y, def_postal)  # postal in POSTAL CODE column
+        pdf.drawString(_TO_POSTAL_X, _TO_CITY_Y, def_postal)      # postal on same writing line as city
     if def_phone:
         pdf.drawString(_TO_PHONE_X, _TO_CITY_Y, def_phone)
 
