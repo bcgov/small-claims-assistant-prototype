@@ -12,6 +12,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from datetime import datetime
+
 from pypdf import PdfReader, PdfWriter
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
@@ -30,6 +32,51 @@ TEMPLATE_PATH = (
 NOTICE_PAGE_INDEXES = {2}
 PAGE_WIDTH = 612
 PAGE_HEIGHT = 792
+
+# ── Form field anchor coordinates derived from template text-position analysis ──
+# All y values are PDF coordinates (origin bottom-left, y increases upward).
+# Calibrated against the official SCL 001 10/2022 template (612 × 792 pt).
+
+# FROM section — claimant name only (address goes on Form 38).
+_FROM_NAME_Y = 671.0
+_FROM_NAME_X = 140.0
+
+# Registry boxes (upper-right).
+_REGISTRY_LOCATION_Y = 726.0
+_REGISTRY_LOCATION_X = 480.0
+
+# TO section — defendant name, address lines, city/prov/postal, and phone.
+_TO_NAME_Y = 607.0
+_TO_ADDRESS_Y = 585.0
+_TO_CITY_Y = 562.0
+_TO_PROV_POSTAL_Y = 547.0
+_TO_PHONE_X = 490.0
+_TO_DATA_X = 140.0
+
+# WHAT HAPPENED — facts text area (y=450–507; 5 lines max to avoid overflow).
+_FACTS_START_Y = 495.0
+_FACTS_MAX_LINES = 5
+_FACTS_X = 140.0
+_FACTS_MAX_WIDTH = 430.0
+
+# WHERE / WHEN — city only (province pre-printed); date to the right.
+_WHERE_CITY_Y = 437.0
+_WHERE_CITY_X = 140.0
+_WHEN_DATE_Y = 415.0
+_WHEN_DATE_X = 415.0
+
+# HOW MUCH — remedy rows a–e and sub-total.
+# Each tuple is (description_y, amount_y) anchored to template row markers.
+_REMEDY_ROW_ANCHORS = [
+    (381.0, 376.0),   # row a  (label y=386.9, $ y=376.4)
+    (348.0, 343.0),   # row b  (label y=353.8, $ y=343.3)
+    (315.0, 310.0),   # row c  (label y=320.8, $ y=310.3)
+    (282.0, 277.0),   # row d  (label y=287.7, $ y=277.2)
+    (250.0, 245.0),   # row e  (label y=256.1, $ y=245.6)
+]
+_REMEDY_DESC_X = 132.0
+_REMEDY_AMOUNT_RIGHT_X = 548.0
+_TOTAL_Y = 225.0   # TOTAL row (label y=226.8, $ y=225.5)
 
 
 # Keep file loading deterministic and isolated from host-specific state.
@@ -71,9 +118,9 @@ def flatten_address(contact: dict[str, Any]) -> list[str]:
     return address_lines
 
 
-# Convert the canonical claim date object into one concise string for the court form.
+# Convert the canonical claim date object into one concise human-readable string.
 def format_incident_date(incident_date: dict[str, Any]) -> str:
-    """Return the claim date or date range as printed text."""
+    """Return the claim date or date range as a human-readable string (e.g. March 15, 2026)."""
 
     if not incident_date:
         return ""
@@ -82,10 +129,16 @@ def format_incident_date(incident_date: dict[str, Any]) -> str:
     start = incident_date.get("start", "")
     end = incident_date.get("end", "")
 
-    if date_type == "range" and start and end:
-        return f"{start} to {end}"
+    def _parse(iso: str) -> str:
+        try:
+            return datetime.strptime(iso, "%Y-%m-%d").strftime("%B %d, %Y")
+        except ValueError:
+            return iso
 
-    return start
+    if date_type == "range" and start and end:
+        return f"{_parse(start)} to {_parse(end)}"
+
+    return _parse(start)
 
 
 # Keep money presentation stable across tests and downstream review.
@@ -136,7 +189,11 @@ def draw_lines(pdf: canvas.Canvas, *, lines: list[str], x: float, y: float, lead
 
 # Render the main notice page overlay for one copy of the form package.
 def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
-    """Overlay the claimant, defendant, facts, and remedies onto one notice form page."""
+    """Overlay claimant, defendant, facts, where/when, and remedies onto the notice form page.
+
+    Coordinate system: PDF origin is bottom-left; y increases upward.
+    All anchor constants are calibrated against the SCL 001 10/2022 template (612 × 792 pt).
+    """
 
     claimant = (case_data.get("claimants") or [{}])[0]
     defendant = (case_data.get("defendants") or [{}])[0]
@@ -144,52 +201,71 @@ def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
     remedies = case_data.get("remedies", [])
     jurisdiction = case_data.get("jurisdiction", {})
 
-    claimant_lines = [claimant.get("name", {}).get("full", "")]
-    claimant_lines.extend(flatten_address(claimant.get("contact", {})))
-
-    defendant_lines = [defendant.get("name", {}).get("full", "")]
-    defendant_lines.extend(flatten_address(defendant.get("contact", {})))
-
-    detail_text = claim.get("facts", "")
-    detail_lines = wrap_text(detail_text, font_name="Helvetica", font_size=9, max_width=430)
-    detail_lines = detail_lines[:18]
-
-    where_text = ", ".join(
-        part for part in [
-            claim.get("location", {}).get("city"),
-            claim.get("location", {}).get("province"),
-            claim.get("location", {}).get("country"),
-        ] if part
-    )
-    when_text = format_incident_date(claim.get("incidentDate", {}))
-
-    remedy_lines = remedies[:5]
-    total_amount = sum(
-        float(remedy.get("amount", {}).get("value", 0.0))
-        for remedy in remedies
-        if remedy.get("amount", {}).get("value") is not None
-    )
-
     pdf.setFont("Helvetica", 9)
-    pdf.drawString(480, 734, str(jurisdiction.get("registryLocation", "")))
 
-    draw_lines(pdf, lines=claimant_lines, x=140, y=646, leading=11, font_size=9)
-    draw_lines(pdf, lines=defendant_lines, x=140, y=612, leading=11, font_size=9)
-    draw_lines(pdf, lines=detail_lines, x=156, y=492, leading=11, font_size=9)
-    pdf.drawString(108, 326, where_text)
-    pdf.drawString(442, 326, when_text)
+    # ── Registry location (upper-right box, below REGISTRY LOCATION label) ──
+    registry_location = str(jurisdiction.get("registryLocation", ""))
+    if registry_location:
+        pdf.drawString(_REGISTRY_LOCATION_X, _REGISTRY_LOCATION_Y, registry_location)
 
-    row_y = 264
-    for remedy in remedy_lines:
+    # ── FROM section — claimant name only; address is on Form 38 ──
+    claimant_name = claimant.get("name", {}).get("full", "")
+    if claimant_name:
+        pdf.drawString(_FROM_NAME_X, _FROM_NAME_Y, claimant_name)
+
+    # ── TO section — defendant name, address, city/prov/postal, phone ──
+    defendant_name = defendant.get("name", {}).get("full", "")
+    if defendant_name:
+        pdf.drawString(_TO_DATA_X, _TO_NAME_Y, defendant_name)
+
+    def_contact = defendant.get("contact", {})
+    def_street_lines = [ln for ln in def_contact.get("addressLines", []) if ln]
+    def_city = def_contact.get("city", "")
+    def_prov = def_contact.get("province", "")
+    def_postal = def_contact.get("postalCode", "")
+    def_phone = def_contact.get("phone", "")
+
+    if def_street_lines:
+        pdf.drawString(_TO_DATA_X, _TO_ADDRESS_Y, def_street_lines[0])
+    if def_city:
+        city_prov = ", ".join(p for p in [def_city, def_prov] if p)
+        pdf.drawString(_TO_DATA_X, _TO_CITY_Y, city_prov)
+    if def_postal:
+        pdf.drawString(_TO_DATA_X, _TO_PROV_POSTAL_Y, def_postal)
+    if def_phone:
+        pdf.drawString(_TO_PHONE_X, _TO_CITY_Y, def_phone)
+
+    # ── WHAT HAPPENED — facts narrative, clipped to available section height ──
+    facts_text = claim.get("facts", "")
+    fact_lines = wrap_text(facts_text, font_name="Helvetica", font_size=9, max_width=_FACTS_MAX_WIDTH)
+    fact_lines = fact_lines[:_FACTS_MAX_LINES]
+    if fact_lines:
+        draw_lines(pdf, lines=fact_lines, x=_FACTS_X, y=_FACTS_START_Y, leading=11, font_size=9)
+
+    # ── WHERE — city only; province (British Columbia) is pre-printed on the form ──
+    where_city = claim.get("location", {}).get("city", "")
+    if where_city:
+        pdf.drawString(_WHERE_CITY_X, _WHERE_CITY_Y, where_city)
+
+    # ── WHEN — incident date formatted as human-readable string ──
+    when_text = format_incident_date(claim.get("incidentDate", {}))
+    if when_text:
+        pdf.drawString(_WHEN_DATE_X, _WHEN_DATE_Y, when_text)
+
+    # ── HOW MUCH — remedy rows and sub-total ──
+    total_amount = 0.0
+    for row_index, remedy in enumerate(remedies[:5]):
+        if row_index >= len(_REMEDY_ROW_ANCHORS):
+            break
+        desc_y, amt_y = _REMEDY_ROW_ANCHORS[row_index]
         description = remedy.get("description", "")
-        amount_value = float(remedy.get("amount", {}).get("value", 0.0))
-        wrapped_description = wrap_text(description, font_name="Helvetica", font_size=9, max_width=360)
-        wrapped_description = wrapped_description[:1] or [""]
-        pdf.drawString(132, row_y, wrapped_description[0])
-        pdf.drawRightString(548, row_y, format_money(amount_value))
-        row_y -= 21
+        amount_value = float(remedy.get("amount", {}).get("value", 0.0) or 0.0)
+        wrapped_desc = wrap_text(description, font_name="Helvetica", font_size=9, max_width=360)
+        pdf.drawString(_REMEDY_DESC_X, desc_y, (wrapped_desc[:1] or [""])[0])
+        pdf.drawRightString(_REMEDY_AMOUNT_RIGHT_X, amt_y, format_money(amount_value))
+        total_amount += amount_value
 
-    pdf.drawRightString(548, 84, format_money(total_amount))
+    pdf.drawRightString(_REMEDY_AMOUNT_RIGHT_X, _TOTAL_Y, format_money(total_amount))
 
 
 # Build an overlay PDF in memory so the official template can remain the static background.

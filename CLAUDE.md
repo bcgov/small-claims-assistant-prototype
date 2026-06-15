@@ -49,9 +49,10 @@ Intake (agent/skill) → canonical JSON → renderer script → PDF artifact
 
 - **`agents/notice-of-claim-intake-agent.md`** — interactive intake sub-agent; drives guided questioning and writes canonical case JSON
 - **`scripts/write_notice_of_claim_json.py`** — merges partial intake data onto the canonical draft template
-- **`scripts/render_notice_of_claim_pdf.py`** — validates canonical JSON readiness and overlays field data onto `scl001-notice-of-claim-template.pdf` using `pypdf` + `reportlab`
+- **`scripts/render_notice_of_claim_pdf.py`** — validates canonical JSON readiness and overlays field data onto `scl001-notice-of-claim-template.pdf` using `pypdf` + `reportlab`. Field placement uses template-calibrated coordinate constants (extracted via pypdf text-position visitor from the official SCL 001 10/2022 form). Field section boundaries are locked by 13 position-aware automated tests covering FROM, TO, WHERE, WHEN, HOW MUCH, and TOTAL rows.
 - **`scripts/submit_notice_of_claim_mock_api.py`** — filing-adapter stub that emits mock request/response artifacts from canonical JSON
 - **`assets/case-models/notice-of-claim/notice-of-claim-intake-definition.json`** — canonical case model schema and draft template; the shared contract between intake, rendering, and the filing adapter
+- **`skills/notice-of-claim-pdf-generation/assets/`** — file-level symlinks to the official form template (`scl001-notice-of-claim-template.pdf`) and example output PDF, making the skill self-contained per plugin architecture policy. `skills/notice-of-claim-pdf-generation/scripts/render_notice_of_claim_pdf.py` is also a symlink into `scripts/`.
 
 AI involvement ends at intake and validation. PDF rendering must be deterministic — no AI in the render path.
 
@@ -100,7 +101,8 @@ The installed copies under `.agents/` in this repo are runtime copies for inspec
 
 ## Product Constraints
 
-- The product must generate court-ready PDFs that match the official BC form package **exactly** — approximate rendering is not acceptable.
-- AI belongs upstream (intake, guidance, drafting, validation). Final form rendering must be deterministic.
+- The renderer generates court-ready PDFs by overlaying data onto the official BC form template (SCL 001) using template-calibrated coordinate constants. Field placement is deterministic and regression-tested.
+- AI belongs upstream (intake, guidance, drafting, validation). Final form rendering must be deterministic — no AI in the render path.
 - A future CEIS integration is an optional downstream adapter and must not be coupled to the core intake and PDF-generation workflow.
 - The existing BC Filing Assistant is a **reference system**, not the product being modified.
+- Repository: [bcgov/small-claims-assistant-prototype](https://github.com/bcgov/small-claims-assistant-prototype)

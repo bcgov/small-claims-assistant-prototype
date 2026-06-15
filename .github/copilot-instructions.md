@@ -2,7 +2,7 @@
 
 This repository has two active purposes:
 
-1. Explore and define a BC Small Claims Forms Assistant.
+1. Build and iterate on a BC Small Claims Forms Assistant prototype (plugin-first, intake-to-PDF pipeline). A working prototype exists at [bcgov/small-claims-assistant-prototype](https://github.com/bcgov/small-claims-assistant-prototype).
 2. Improve the exploration-cycle plugin, skills, and agent behavior that support this workflow.
 
 ## Sources Of Truth
@@ -54,9 +54,10 @@ Use these rules when updating them:
 
 Current standing assumptions for this repo:
 
-- The target product is a BC Small Claims Forms Assistant.
+- The target product is a BC Small Claims Forms Assistant. A working prototype (`plugins/small-claims-assistant/`) exists with intake, PDF generation, and mock filing adapter.
+- The PDF renderer (`render_notice_of_claim_pdf.py`) overlays case data onto the official SCL 001 form template using template-calibrated coordinate constants. Field placement is locked by 13 position-aware automated tests.
+- Skill `assets/` directories use file-level symlinks (per plugin architecture policy) to keep each skill self-contained.
 - The existing BC Filing Assistant is a reference system, not the product being modified.
-- The product must eventually generate court-ready PDFs that match the official BC form package exactly, not approximately.
 - AI belongs upstream in intake, guidance, drafting assistance, and validation. Final form rendering must be deterministic.
 - A future CEIS integration may exist as an optional downstream adapter, but it should not be coupled to the core intake and PDF-generation workflow.
 

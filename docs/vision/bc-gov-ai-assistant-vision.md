@@ -112,7 +112,7 @@ This vision aligns with a broader set of patterns already showing up across the 
 A Claude Code plugin (`small-claims-assistant`) with cleanly separated concerns:
 
 - **`notice-of-claim-intake`** skill: Guided conversational intake following the BC Courts Filing Assistant question order, driven by a JSON intake definition
-- **`notice-of-claim-pdf-generation`** skill: Deterministic PDF rendering by overlaying case data onto the official Form 1 template
+- **`notice-of-claim-pdf-generation`** skill: Deterministic PDF rendering by overlaying case data onto the official Form 1 template (SCL 001). Field placement is template-calibrated using extracted PDF coordinates and locked by 13 position-aware automated tests — each major form section (FROM, TO, WHERE, WHEN, HOW MUCH, TOTAL) is independently verified. Dates are formatted human-readable (e.g., "March 15, 2026"); WHERE shows city only (province is pre-printed on the form); FROM shows claimant name only (address belongs on Form 38).
 - **`notice-of-claim-filing-adapter`** skill: Mock filing submission adapter consuming the same canonical JSON
 - **`notice-of-claim-intake-agent`**: Sub-agent orchestrating the intake conversation with memory, tool restrictions, and a focused system prompt
 
@@ -211,4 +211,4 @@ This vision is not speculative. It reflects a convergent architectural pattern t
 - [Agent Registry marketplace pattern](https://21st.dev/community/blog/agent-registry)
 - [The End of Government Forms: A Vision for an AI-Powered Public Service](https://medium.com/@richard.fremmerlid) (Fremmerlid, 2025)
 - [Architecting the Future: A Technical Blueprint for a Unified Government AI Agent](https://medium.com/@richard.fremmerlid) (Fremmerlid, 2025)
-- [small-claims-assistant plugin](https://github.com/) (proof of concept)
+- [small-claims-assistant-prototype](https://github.com/bcgov/small-claims-assistant-prototype) (proof of concept)

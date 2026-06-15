@@ -16,6 +16,20 @@ from pypdf import PdfReader
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+# FROM-section claimant name must land here (below NAME label y=680, above Form38 checkbox y=669).
+CLAIMANT_NAME_Y_MIN, CLAIMANT_NAME_Y_MAX = 660.0, 685.0
+# FROM section top — address lines must NOT appear above this threshold.
+FROM_SECTION_CLAIMANT_ONLY_THRESHOLD = 620.0
+# TO-section defendant name must land below the NAME label (y=616).
+DEFENDANT_NAME_Y_MIN, DEFENDANT_NAME_Y_MAX = 595.0, 625.0
+# WHERE city must land near the CITY/TOWN/MUNICIPALITY labels (y=449/443).
+WHERE_CITY_Y_MIN, WHERE_CITY_Y_MAX = 425.0, 455.0
+# WHEN date must land in the WHEN column (annotation rect y=400–440).
+WHEN_DATE_Y_MIN, WHEN_DATE_Y_MAX = 405.0, 445.0
+# First remedy row (a) must land near the 'a' label (y=386.9) and its $ (y=376.4).
+REMEDY_ROW_A_Y_MIN, REMEDY_ROW_A_Y_MAX = 360.0, 395.0
+# Sub-total must land at the TOTAL row (y=226.8 / $ y=225.5).
+TOTAL_Y_MIN, TOTAL_Y_MAX = 215.0, 235.0
 SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "render_notice_of_claim_pdf.py"
 
 
@@ -27,6 +41,28 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
 
         reader = PdfReader(str(pdf_path))
         return "\n".join((page.extract_text() or "") for page in reader.pages)
+
+    def extract_page_text_positions(self, pdf_path: Path, page_number: int) -> list[tuple[float, float, str]]:
+        """Return (y, x, text) tuples for every non-blank text run on a page."""
+
+        reader = PdfReader(str(pdf_path))
+        page = reader.pages[page_number - 1]
+        parts: list[tuple[float, float, str]] = []
+
+        def _visitor(text: str, cm: Any, tm: Any, fontDict: Any, fontSize: Any) -> None:
+            if text and text.strip():
+                parts.append((round(tm[5], 1), round(tm[4], 1), text.strip()))
+
+        page.extract_text(visitor_text=_visitor)
+        return parts
+
+    def find_y_for_text(self, positions: list[tuple[float, float, str]], needle: str) -> float | None:
+        """Return the y-coordinate of the first text fragment that contains needle."""
+
+        for y, _x, text in positions:
+            if needle in text:
+                return y
+        return None
 
     def extract_pdf_page_text(self, pdf_path: Path, page_number: int) -> str:
         """Return extracted text for one 1-based PDF page."""
@@ -259,6 +295,123 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
 
             self.assertIn("Jane Example", notice_page)
             self.assertNotIn("Jane Example", certificate_page)
+
+    # ------------------------------------------------------------------
+    # Position-aware layout tests — these reproduce the coordinate bugs.
+    # ------------------------------------------------------------------
+
+    def _render_to_tmpdir(self, payload: dict[str, Any]) -> Path:
+        """Render payload to a temp dir and return the package PDF path."""
+
+        temp_dir = tempfile.mkdtemp()
+        temp_path = Path(temp_dir)
+        input_path = temp_path / "case.json"
+        output_dir = temp_path / "output"
+        input_path.write_text(json.dumps(payload), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--input", str(input_path), "--output-dir", str(output_dir)],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        return output_dir / "notice-of-claim-package.pdf"
+
+    def test_claimant_name_placed_in_from_section(self) -> None:
+        """Claimant name must land in the FROM section (y between 660 and 685)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        y = self.find_y_for_text(positions, "Jane Example")
+        self.assertIsNotNone(y, "Claimant name not found on notice page")
+        self.assertGreaterEqual(y, CLAIMANT_NAME_Y_MIN, f"Claimant name too low: y={y}")
+        self.assertLessEqual(y, CLAIMANT_NAME_Y_MAX, f"Claimant name too high: y={y}")
+
+    def test_claimant_address_not_in_from_section(self) -> None:
+        """FROM section (y > 620) must contain only the claimant name, not the full address."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        in_from = [(y, x, t) for y, x, t in positions if y > FROM_SECTION_CLAIMANT_ONLY_THRESHOLD and x > 100]
+        texts_in_from = {t for _y, _x, t in in_from}
+        self.assertNotIn("123 Main Street", texts_in_from, "Claimant street address must not appear in FROM section")
+        self.assertNotIn("V6B 1A1", " ".join(texts_in_from), "Claimant postal code must not appear in FROM section")
+
+    def test_defendant_name_placed_in_to_section(self) -> None:
+        """Defendant name must land in the TO section (y between 595 and 625)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        y = self.find_y_for_text(positions, "ABC Renovations Ltd.")
+        self.assertIsNotNone(y, "Defendant name not found on notice page")
+        self.assertGreaterEqual(y, DEFENDANT_NAME_Y_MIN, f"Defendant name too low: y={y}")
+        self.assertLessEqual(y, DEFENDANT_NAME_Y_MAX, f"Defendant name too high: y={y}")
+
+    def test_where_city_placed_in_where_section(self) -> None:
+        """WHERE city must land near the CITY/TOWN/MUNICIPALITY label (y between 425 and 455)."""
+
+        payload = self.build_case_payload(is_complete=True)
+        payload["claim"]["location"]["city"] = "Vancouver"
+        pdf_path = self._render_to_tmpdir(payload)
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        # Find the user-data "Vancouver" that is in the WHERE column (x < 350, below WHERE? label).
+        matching = [(y, x, t) for y, x, t in positions
+                    if "Vancouver" in t and x < 350 and y < 460]
+        self.assertTrue(matching, "WHERE city text not found in WHERE section x-range")
+        y = matching[0][0]
+        self.assertGreaterEqual(y, WHERE_CITY_Y_MIN, f"WHERE city too low: y={y}")
+        self.assertLessEqual(y, WHERE_CITY_Y_MAX, f"WHERE city too high: y={y}")
+
+    def test_when_date_placed_in_when_section(self) -> None:
+        """WHEN date must land in the WHEN column (y between 405 and 445)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        # The incident date 2026-03-15 should be rendered as a human-readable string.
+        when_entries = [(y, x, t) for y, x, t in positions
+                        if ("2026" in t or "March" in t) and x > 350]
+        self.assertTrue(when_entries, "WHEN date not found in WHEN column (x > 350)")
+        y = when_entries[0][0]
+        self.assertGreaterEqual(y, WHEN_DATE_Y_MIN, f"WHEN date too low: y={y}")
+        self.assertLessEqual(y, WHEN_DATE_Y_MAX, f"WHEN date too high: y={y}")
+
+    def test_remedy_row_a_placed_in_how_much_section(self) -> None:
+        """First remedy description must land near the 'a' row in HOW MUCH (y 360–395)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        matching = [(y, x, t) for y, x, t in positions
+                    if "Refund" in t and x > 100]
+        self.assertTrue(matching, "First remedy description not found on notice page")
+        y = matching[0][0]
+        self.assertGreaterEqual(y, REMEDY_ROW_A_Y_MIN, f"Remedy row a too low: y={y}")
+        self.assertLessEqual(y, REMEDY_ROW_A_Y_MAX, f"Remedy row a too high: y={y}")
+
+    def test_total_amount_placed_at_total_row(self) -> None:
+        """Total amount must land at the TOTAL row (y between 215 and 235)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        # Find the total amount (3500.00) at the TOTAL row (not the remedy row).
+        total_entries = [(y, x, t) for y, x, t in positions
+                         if "3500" in t and x > 400 and y < REMEDY_ROW_A_Y_MIN]
+        self.assertTrue(total_entries, "Total amount not found below HOW MUCH rows")
+        y = total_entries[0][0]
+        self.assertGreaterEqual(y, TOTAL_Y_MIN, f"Total amount too low: y={y}")
+        self.assertLessEqual(y, TOTAL_Y_MAX, f"Total amount too high: y={y}")
+
+    def test_when_date_formatted_human_readable(self) -> None:
+        """WHEN date must be formatted as a human-readable string, not raw ISO-8601."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        page_text = self.extract_pdf_page_text(pdf_path, 3)
+        self.assertNotIn("2026-03-15", page_text, "ISO date must not appear verbatim on the form")
+
+    def test_where_text_excludes_country_code(self) -> None:
+        """WHERE section must not show the country code (CA) — province is pre-printed."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        page_text = self.extract_pdf_page_text(pdf_path, 3)
+        # The country abbreviation must not appear in the rendered WHERE value.
+        self.assertNotIn(", CA", page_text, "Country code must not appear in WHERE section")
 
 
 if __name__ == "__main__":
