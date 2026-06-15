@@ -38,7 +38,8 @@ PAGE_HEIGHT = 792
 # Calibrated against the official SCL 001 10/2022 template (612 × 792 pt).
 
 # FROM section — claimant name only (address goes on Form 38).
-_FROM_NAME_Y = 671.0
+# Writing line at y=685.021; text baseline = line_y + 0.8 → 686.
+_FROM_NAME_Y = 686.0
 _FROM_NAME_X = 140.0
 
 # Registry boxes (upper-right).
@@ -46,8 +47,10 @@ _REGISTRY_LOCATION_Y = 726.0
 _REGISTRY_LOCATION_X = 480.0
 
 # TO section — defendant name, address lines, city/prov/postal, and phone.
-_TO_NAME_Y = 607.0
-_TO_ADDRESS_Y = 585.0
+# Writing lines extracted from template graphics stream (text_y = line_y + 0.8):
+#   NAME line y=609.724 → text y=610, ADDRESS line y=588.141 → text y=589, CITY line y=561.195 → text y=562.
+_TO_NAME_Y = 610.0
+_TO_ADDRESS_Y = 589.0
 _TO_CITY_Y = 562.0
 _TO_PROV_POSTAL_Y = 547.0
 _TO_PROV_X = 283.0       # province starts just inside the PROV. label (x=275.7)
@@ -61,20 +64,24 @@ _FACTS_MAX_LINES = 5
 _FACTS_X = 140.0
 _FACTS_MAX_WIDTH = 430.0
 
-# WHERE / WHEN — city only (province pre-printed); date inside leftWhen annotation box (x=322..402.9).
-_WHERE_CITY_Y = 437.0
+# WHERE / WHEN — city only (province pre-printed); WHEN data goes RIGHT of leftWhen sidebar (x=405.8–578.6).
+# WHERE/WHEN share the same writing line: y=441.342 → text y=442.
+# leftWhen sidebar rect=[322.0, 400.6, 402.9, 439.7] is the WHEN? label — data starts at x=405.8.
+_WHERE_CITY_Y = 442.0
 _WHERE_CITY_X = 140.0
-_WHEN_DATE_Y = 418.0   # vertically centred in leftWhen box (y=400.6..439.7)
-_WHEN_DATE_X = 326.0   # just inside left edge of leftWhen annotation box
+_WHEN_DATE_Y = 442.0   # same writing line as WHERE city
+_WHEN_DATE_X = 408.0   # just inside WHEN data field (field x=405.8..578.6)
 
 # HOW MUCH — remedy rows a–e and sub-total.
-# Each tuple is (description_y, amount_y) anchored to template row markers.
+# Each tuple is (description_y, amount_y) calibrated to template writing lines.
+# Desc lines (form): 384.973, 351.921, 318.869, 288.028, 254.182 → text = line + 1.
+# Amt lines (form):  372.974, 339.922, 306.870, 274.198, 241.390 → text = line + 3 (confirmed by existing tests).
 _REMEDY_ROW_ANCHORS = [
-    (381.0, 376.0),   # row a  (label y=386.9, $ y=376.4)
-    (348.0, 343.0),   # row b  (label y=353.8, $ y=343.3)
-    (315.0, 310.0),   # row c  (label y=320.8, $ y=310.3)
-    (282.0, 277.0),   # row d  (label y=287.7, $ y=277.2)
-    (250.0, 245.0),   # row e  (label y=256.1, $ y=245.6)
+    (386.0, 376.0),   # row a  (desc line y=384.973, amt line y=372.974)
+    (353.0, 343.0),   # row b  (desc line y=351.921, amt line y=339.922)
+    (320.0, 310.0),   # row c  (desc line y=318.869, amt line y=306.870)
+    (289.0, 277.0),   # row d  (desc line y=288.028, amt line y=274.198)
+    (255.0, 245.0),   # row e  (desc line y=254.182, amt line y=241.390)
 ]
 _REMEDY_DESC_X = 132.0
 _REMEDY_AMOUNT_RIGHT_X = 548.0

@@ -16,8 +16,8 @@ from pypdf import PdfReader
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
-# FROM-section claimant name must land here (below NAME label y=680, above Form38 checkbox y=669).
-CLAIMANT_NAME_Y_MIN, CLAIMANT_NAME_Y_MAX = 660.0, 685.0
+# FROM-section claimant name must land on the writing line at y=685.021 (+0.8 offset → y≈686).
+CLAIMANT_NAME_Y_MIN, CLAIMANT_NAME_Y_MAX = 660.0, 692.0
 # FROM section top — address lines must NOT appear above this threshold.
 FROM_SECTION_CLAIMANT_ONLY_THRESHOLD = 620.0
 # TO-section defendant name must land below the NAME label (y=616).
@@ -34,8 +34,8 @@ TOTAL_Y_MIN, TOTAL_Y_MAX = 215.0, 235.0
 FACTS_Y_MIN, FACTS_Y_MAX = 445.0, 510.0
 # TO section prov/postal row: postal code must be to the right of the city column.
 TO_POSTAL_X_MIN = 250.0
-# WHEN date x must be inside the leftWhen annotation box (rect x=322..402.9).
-WHEN_DATE_X_MAX = 410.0
+# WHEN date x must be to the RIGHT of the leftWhen sidebar (sidebar ends at x=402.9; data field starts at x=405.8).
+WHEN_DATE_X_MIN = 403.0
 SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "render_notice_of_claim_pdf.py"
 
 
@@ -367,20 +367,20 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
         self.assertLessEqual(y, WHERE_CITY_Y_MAX, f"WHERE city too high: y={y}")
 
     def test_when_date_placed_in_when_section(self) -> None:
-        """WHEN date must land in the WHEN column (y between 405 and 445, x inside leftWhen box)."""
+        """WHEN date must land in the WHEN data field (y 405–445, x to RIGHT of leftWhen sidebar ≥403)."""
 
         pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
         positions = self.extract_page_text_positions(pdf_path, 3)
-        # x > 300 covers both the leftWhen box (322–403) and rules out the facts column (x≈140).
+        # x > 300 covers both leftWhen sidebar area and data field; rules out facts column (x≈140).
         when_entries = [(y, x, t) for y, x, t in positions
                         if ("2026" in t or "March" in t) and x > 300]
         self.assertTrue(when_entries, "WHEN date not found in WHEN column (x > 300)")
         y, x_pos, _ = when_entries[0]
         self.assertGreaterEqual(y, WHEN_DATE_Y_MIN, f"WHEN date too low: y={y}")
         self.assertLessEqual(y, WHEN_DATE_Y_MAX, f"WHEN date too high: y={y}")
-        self.assertLessEqual(
-            x_pos, WHEN_DATE_X_MAX,
-            f"WHEN date x={x_pos} is outside leftWhen annotation box (max x={WHEN_DATE_X_MAX})",
+        self.assertGreaterEqual(
+            x_pos, WHEN_DATE_X_MIN,
+            f"WHEN date x={x_pos} is inside leftWhen sidebar — must be to the right (min x={WHEN_DATE_X_MIN})",
         )
 
     def test_remedy_row_a_placed_in_how_much_section(self) -> None:
@@ -518,6 +518,66 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
             postal_y, city_y, delta=4.0,
             msg=f"Postal code y={postal_y} must be on city writing line y={city_y} (±4pt)",
         )
+
+
+    # ------------------------------------------------------------------
+    # Tight calibration tests — verify text baseline is on the form writing line
+    # (form line y + 0.8pt offset, extracted from the template graphics stream).
+    # ------------------------------------------------------------------
+
+    def test_claimant_name_on_from_writing_line(self) -> None:
+        """Claimant name baseline must be on the FROM writing line (form line y=685.021, target y≈686)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        y = self.find_y_for_text(positions, "Jane Example")
+        self.assertIsNotNone(y, "Claimant name not found on notice page")
+        self.assertGreaterEqual(y, 683.0, f"Claimant name below FROM writing line: y={y} (expected ≥683)")
+        self.assertLessEqual(y, 692.0, f"Claimant name above FROM header: y={y} (expected ≤692)")
+
+    def test_defendant_name_on_to_writing_line(self) -> None:
+        """Defendant name baseline must be on the TO NAME writing line (form line y=609.724, target y≈610)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        y = self.find_y_for_text(positions, "ABC Renovations Ltd.")
+        self.assertIsNotNone(y, "Defendant name not found on notice page")
+        self.assertGreaterEqual(y, 608.0, f"Defendant name below TO writing line: y={y} (expected ≥608)")
+        self.assertLessEqual(y, 613.0, f"Defendant name too high: y={y} (expected ≤613)")
+
+    def test_defendant_address_on_to_address_writing_line(self) -> None:
+        """Defendant street address baseline must be on the TO ADDRESS line (form line y=588.141, target y≈589)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        y = self.find_y_for_text(positions, "456 Industrial Way")
+        self.assertIsNotNone(y, "Defendant address '456 Industrial Way' not found on notice page")
+        self.assertGreaterEqual(y, 587.0, f"Defendant address below writing line: y={y} (expected ≥587)")
+        self.assertLessEqual(y, 593.0, f"Defendant address too high: y={y} (expected ≤593)")
+
+    def test_where_city_on_where_writing_line(self) -> None:
+        """WHERE city baseline must be on the WHERE/WHEN writing line (form line y=441.342, target y≈442)."""
+
+        payload = self.build_case_payload(is_complete=True)
+        payload["claim"]["location"]["city"] = "Kamloops"
+        pdf_path = self._render_to_tmpdir(payload)
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        matching = [(y, x, t) for y, x, t in positions if "Kamloops" in t and x < 350]
+        self.assertTrue(matching, "WHERE city 'Kamloops' not found in WHERE section")
+        y = matching[0][0]
+        self.assertGreaterEqual(y, 440.0, f"WHERE city below writing line: y={y} (expected ≥440)")
+        self.assertLessEqual(y, 445.0, f"WHERE city too high: y={y} (expected ≤445)")
+
+    def test_remedy_descriptions_on_desc_writing_lines(self) -> None:
+        """Remedy description (row a) must be on the HOW MUCH desc writing line (form line y=384.973, target y≈386)."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        matching = [(y, x, t) for y, x, t in positions if "Refund" in t and x > 100]
+        self.assertTrue(matching, "Remedy row a description 'Refund' not found on notice page")
+        y = matching[0][0]
+        self.assertGreaterEqual(y, 384.0, f"Remedy desc row a below writing line: y={y} (expected ≥384)")
+        self.assertLessEqual(y, 390.0, f"Remedy desc row a too high: y={y} (expected ≤390)")
 
 
 if __name__ == "__main__":
