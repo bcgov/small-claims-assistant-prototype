@@ -30,6 +30,12 @@ WHEN_DATE_Y_MIN, WHEN_DATE_Y_MAX = 405.0, 445.0
 REMEDY_ROW_A_Y_MIN, REMEDY_ROW_A_Y_MAX = 360.0, 395.0
 # Sub-total must land at the TOTAL row (y=226.8 / $ y=225.5).
 TOTAL_Y_MIN, TOTAL_Y_MAX = 215.0, 235.0
+# WHAT HAPPENED section y-bounds (below the WHAT HAPPENED? label at y≈527, above WHERE at y≈440).
+FACTS_Y_MIN, FACTS_Y_MAX = 445.0, 510.0
+# TO section prov/postal row: postal code must be to the right of the city column.
+TO_POSTAL_X_MIN = 250.0
+# WHEN date x must be inside the leftWhen annotation box (rect x=322..402.9).
+WHEN_DATE_X_MAX = 410.0
 SCRIPT_PATH = PLUGIN_ROOT / "scripts" / "render_notice_of_claim_pdf.py"
 
 
@@ -361,17 +367,21 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
         self.assertLessEqual(y, WHERE_CITY_Y_MAX, f"WHERE city too high: y={y}")
 
     def test_when_date_placed_in_when_section(self) -> None:
-        """WHEN date must land in the WHEN column (y between 405 and 445)."""
+        """WHEN date must land in the WHEN column (y between 405 and 445, x inside leftWhen box)."""
 
         pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
         positions = self.extract_page_text_positions(pdf_path, 3)
-        # The incident date 2026-03-15 should be rendered as a human-readable string.
+        # x > 300 covers both the leftWhen box (322–403) and rules out the facts column (x≈140).
         when_entries = [(y, x, t) for y, x, t in positions
-                        if ("2026" in t or "March" in t) and x > 350]
-        self.assertTrue(when_entries, "WHEN date not found in WHEN column (x > 350)")
-        y = when_entries[0][0]
+                        if ("2026" in t or "March" in t) and x > 300]
+        self.assertTrue(when_entries, "WHEN date not found in WHEN column (x > 300)")
+        y, x_pos, _ = when_entries[0]
         self.assertGreaterEqual(y, WHEN_DATE_Y_MIN, f"WHEN date too low: y={y}")
         self.assertLessEqual(y, WHEN_DATE_Y_MAX, f"WHEN date too high: y={y}")
+        self.assertLessEqual(
+            x_pos, WHEN_DATE_X_MAX,
+            f"WHEN date x={x_pos} is outside leftWhen annotation box (max x={WHEN_DATE_X_MAX})",
+        )
 
     def test_remedy_row_a_placed_in_how_much_section(self) -> None:
         """First remedy description must land near the 'a' row in HOW MUCH (y 360–395)."""
@@ -412,6 +422,73 @@ class RenderNoticeOfClaimPdfTest(unittest.TestCase):
         page_text = self.extract_pdf_page_text(pdf_path, 3)
         # The country abbreviation must not appear in the rendered WHERE value.
         self.assertNotIn(", CA", page_text, "Country code must not appear in WHERE section")
+
+
+    def test_facts_text_within_what_happened_section(self) -> None:
+        """All rendered facts lines must land within the WHAT HAPPENED section (y 445–510).
+
+        Uses a multi-line facts payload that triggers text wrapping to expose
+        any line-spacing overflow into the WHERE/WHEN or HOW MUCH sections.
+        """
+
+        payload = self.build_case_payload(is_complete=True)
+        payload["claim"]["facts"] = (
+            "The defendant agreed to complete kitchen renovation work by March 15, 2026. "
+            "The claimant paid a deposit of 1500 on January 10, 2026. "
+            "The defendant abandoned the project on March 1, 2026 without completing "
+            "the agreed work or returning the deposit."
+        )
+        pdf_path = self._render_to_tmpdir(payload)
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        # Match any facts fragment at the data x-start (≥ 130) below the WHAT HAPPENED heading.
+        facts_entries = [
+            (y, x, t) for y, x, t in positions
+            if x >= 130 and FACTS_Y_MIN <= y <= FACTS_Y_MAX
+            and any(kw in t for kw in ("defendant agreed", "deposit", "abandoned"))
+        ]
+        self.assertTrue(facts_entries, "No facts lines found within WHAT HAPPENED y-range (445–510)")
+        # Also assert that NO facts text appears below the WHAT HAPPENED section.
+        overflow = [
+            (y, t) for y, x, t in positions
+            if x >= 130 and y < FACTS_Y_MIN
+            and any(kw in t for kw in ("defendant agreed", "abandoned", "returning the deposit"))
+        ]
+        self.assertFalse(
+            overflow,
+            f"Facts lines overflowed below WHAT HAPPENED section: {overflow}",
+        )
+
+    def test_defendant_city_does_not_include_province(self) -> None:
+        """The city field in the TO section must show city only, not 'City, Province'."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        city_entries = [(y, x, t) for y, x, t in positions if "Burnaby" in t]
+        self.assertTrue(city_entries, "Defendant city 'Burnaby' not found on notice page")
+        for _, _, text in city_entries:
+            self.assertNotIn(", BC", text, f"City field must not include province abbreviation: got '{text}'")
+
+    def test_defendant_postal_in_postal_column(self) -> None:
+        """Postal code must land in the postal column (x > 250), not the city/address column."""
+
+        pdf_path = self._render_to_tmpdir(self.build_case_payload(is_complete=True))
+        positions = self.extract_page_text_positions(pdf_path, 3)
+        postal_entries = [(y, x, t) for y, x, t in positions if "V5C" in t]
+        self.assertTrue(postal_entries, "Defendant postal code 'V5C 2B2' not found on notice page")
+        for _, x, _ in postal_entries:
+            self.assertGreater(
+                x, TO_POSTAL_X_MIN,
+                f"Postal code x={x} must be > {TO_POSTAL_X_MIN} (postal column, not city column)",
+            )
+
+    def test_defendant_phone_rendered_in_to_section(self) -> None:
+        """Defendant phone number must appear on the notice page when provided at the defendant level."""
+
+        payload = self.build_case_payload(is_complete=True)
+        payload["defendants"][0]["phone"] = "604-555-1234"
+        pdf_path = self._render_to_tmpdir(payload)
+        page_text = self.extract_pdf_page_text(pdf_path, 3)
+        self.assertIn("604-555-1234", page_text, "Defendant phone not rendered on notice page")
 
 
 if __name__ == "__main__":

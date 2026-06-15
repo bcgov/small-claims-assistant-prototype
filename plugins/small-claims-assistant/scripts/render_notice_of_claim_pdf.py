@@ -50,6 +50,8 @@ _TO_NAME_Y = 607.0
 _TO_ADDRESS_Y = 585.0
 _TO_CITY_Y = 562.0
 _TO_PROV_POSTAL_Y = 547.0
+_TO_PROV_X = 283.0       # province starts just inside the PROV. label (x=275.7)
+_TO_POSTAL_X = 355.0     # postal code starts in the POSTAL CODE column
 _TO_PHONE_X = 490.0
 _TO_DATA_X = 140.0
 
@@ -59,11 +61,11 @@ _FACTS_MAX_LINES = 5
 _FACTS_X = 140.0
 _FACTS_MAX_WIDTH = 430.0
 
-# WHERE / WHEN — city only (province pre-printed); date to the right.
+# WHERE / WHEN — city only (province pre-printed); date inside leftWhen annotation box (x=322..402.9).
 _WHERE_CITY_Y = 437.0
 _WHERE_CITY_X = 140.0
-_WHEN_DATE_Y = 415.0
-_WHEN_DATE_X = 415.0
+_WHEN_DATE_Y = 418.0   # vertically centred in leftWhen box (y=400.6..439.7)
+_WHEN_DATE_X = 326.0   # just inside left edge of leftWhen annotation box
 
 # HOW MUCH — remedy rows a–e and sub-total.
 # Each tuple is (description_y, amount_y) anchored to template row markers.
@@ -223,15 +225,17 @@ def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
     def_city = def_contact.get("city", "")
     def_prov = def_contact.get("province", "")
     def_postal = def_contact.get("postalCode", "")
-    def_phone = def_contact.get("phone", "")
+    # Phone may be at the defendant top-level (canonical schema) or inside contact.
+    def_phone = defendant.get("phone", "") or def_contact.get("phone", "")
 
     if def_street_lines:
         pdf.drawString(_TO_DATA_X, _TO_ADDRESS_Y, def_street_lines[0])
     if def_city:
-        city_prov = ", ".join(p for p in [def_city, def_prov] if p)
-        pdf.drawString(_TO_DATA_X, _TO_CITY_Y, city_prov)
+        pdf.drawString(_TO_DATA_X, _TO_CITY_Y, def_city)          # city only — no province
+    if def_prov:
+        pdf.drawString(_TO_PROV_X, _TO_PROV_POSTAL_Y, def_prov)   # province in PROV. column
     if def_postal:
-        pdf.drawString(_TO_DATA_X, _TO_PROV_POSTAL_Y, def_postal)
+        pdf.drawString(_TO_POSTAL_X, _TO_PROV_POSTAL_Y, def_postal)  # postal in POSTAL CODE column
     if def_phone:
         pdf.drawString(_TO_PHONE_X, _TO_CITY_Y, def_phone)
 
@@ -239,8 +243,8 @@ def draw_notice_page(pdf: canvas.Canvas, case_data: dict[str, Any]) -> None:
     facts_text = claim.get("facts", "")
     fact_lines = wrap_text(facts_text, font_name="Helvetica", font_size=9, max_width=_FACTS_MAX_WIDTH)
     fact_lines = fact_lines[:_FACTS_MAX_LINES]
-    if fact_lines:
-        draw_lines(pdf, lines=fact_lines, x=_FACTS_X, y=_FACTS_START_Y, leading=11, font_size=9)
+    for i, line in enumerate(fact_lines):
+        pdf.drawString(_FACTS_X, _FACTS_START_Y - i * 11, line)
 
     # ── WHERE — city only; province (British Columbia) is pre-printed on the form ──
     where_city = claim.get("location", {}).get("city", "")
