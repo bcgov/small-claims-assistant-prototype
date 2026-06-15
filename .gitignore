@@ -1,2 +1,6 @@
 .claude/worktrees/
 temp/
+
+tmp-preview/
+__pycache__/
+*.pyc
